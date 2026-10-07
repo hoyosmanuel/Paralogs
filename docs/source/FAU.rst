@@ -707,6 +707,23 @@ You should see this:
   /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FAU/sequences/FAU_15_paralogs_3prime_3kb_CENSOR.fa
 
 
+Clean the headers (or this thing will not work)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  awk '
+  /^>/ {
+      h=$0
+      sub(/^>/,"",h)
+      split(h,a,"|")
+      gsub(/_/,"",a[1])
+      print ">" a[1]
+      next
+  }
+  {print}
+  ' ANALYSES/FAU/sequences/FAU_15_paralogs_3prime_3kb_CENSOR.fa \
+  > ANALYSES/FAU/sequences/FAU_15_paralogs_3prime_3kb_CENSOR_simpleheaders.fa
+
+
 5) Send the FASTA to CENSOR
 -----------------------------------
 
