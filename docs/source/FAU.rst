@@ -84,6 +84,8 @@ I. Install SLiM
 
 You should see something like this:
 
+.. code-block::
+
   ./ANALYSES/FAU/scripts/01_find_FAU_hits.sh
   Created:
   /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FAU/intermediate/FAU_all_hits.tsv
