@@ -585,3 +585,107 @@ You should see something like this:
   Rhinopoma_microphyllum_FAU_paralog_3prime_10kb.fa	   10000
   Rhinopoma_muscatellum_FAU_paralog_3prime_10kb.fa	   10000
   Rousettus_aegyptiacus_FAU_paralog_3prime_10kb.fa	   10000
+
+
+
+
+4) Crear un FASTA de los terminales para enviar a CENSOR
+---------------------------------------------------------
+
+.. code-block:: bash
+
+  cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
+
+.. code-block:: bash
+
+  cat > ANALYSES/FAU/scripts/04_make_FAU_CENSOR_fasta.sh <<'EOF'
+  #!/bin/bash
+  set -euo pipefail
+  
+  # ============================================================
+  # 04_make_FAU_CENSOR_fasta.sh
+  #
+  # Objective:
+  # Combine the 15 FAU paralog 3' 10-kb genomic regions into
+  # a single multi-FASTA file for submission to CENSOR/Repbase.
+  #
+  # Each FASTA header contains:
+  #   - species
+  #   - scaffold
+  #   - genomic coordinates
+  #   - paralog strand
+  #
+  # Input:
+  #   intermediate/FAU_3prime_10kb_regions.tsv
+  #   sequences/3prime_10kb/*.fa
+  #
+  # Output:
+  #   sequences/FAU_15_paralogs_3prime_10kb_CENSOR.fa
+  # ============================================================
+  
+  ROOT="/Volumes/Expansion/project3/bat_HTF_genomic_analysis"
+  
+  REGIONS="$ROOT/ANALYSES/FAU/intermediate/FAU_3prime_10kb_regions.tsv"
+  
+  SEQDIR="$ROOT/ANALYSES/FAU/sequences/3prime_10kb"
+  
+  OUT="$ROOT/ANALYSES/FAU/sequences/FAU_15_paralogs_3prime_10kb_CENSOR.fa"
+  
+  
+  # Start with an empty output file
+  > "$OUT"
+  
+  
+  # Read extraction metadata
+  tail -n +2 "$REGIONS" | \
+  while IFS=$'\t' read -r \
+      species scaffold paralog_start paralog_end strand region_start region_end fasta
+  do
+  
+      infile="$SEQDIR/${species}_FAU_paralog_3prime_10kb.fa"
+  
+      if [[ ! -s "$infile" ]]; then
+          echo "ERROR: missing sequence for $species" >&2
+          exit 1
+      fi
+  
+  
+      # Informative FASTA header
+      printf ">%s|%s:%s-%s|FAU_paralog_3prime_10kb|strand=%s\n" \
+          "$species" \
+          "$scaffold" \
+          "$region_start" \
+          "$region_end" \
+          "$strand" \
+          >> "$OUT"
+  
+  
+      # Copy sequence, excluding original samtools header
+      grep -v '^>' "$infile" >> "$OUT"
+  
+  done
+  
+  
+  echo "Created:"
+  echo "$OUT"
+  
+  echo
+  echo "Sequences in multi-FASTA:"
+  grep -c '^>' "$OUT"
+  EOF
+
+Execute
+~~~~~~~
+
+.. code-block::
+
+  chmod +x ANALYSES/FAU/scripts/04_make_FAU_CENSOR_fasta.sh
+  ./ANALYSES/FAU/scripts/04_make_FAU_CENSOR_fasta.sh
+
+
+You should see this:
+
+  (samtools_env) manuelhoyos@MacBookPro bat_HTF_genomic_analysis %   chmod +x ANALYSES/FAU/scripts/04_make_FAU_CENSOR_fasta.sh
+    ./ANALYSES/FAU/scripts/04_make_FAU_CENSOR_fasta.sh
+  Created:
+  /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FAU/sequences/FAU_15_paralogs_3prime_10kb_CENSOR.fa
