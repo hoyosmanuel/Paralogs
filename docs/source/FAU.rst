@@ -710,6 +710,8 @@ You should see this:
 Clean the headers (or this thing will not work)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. code-block:: bash
+
   awk '
   /^>/ {
       h=$0
@@ -731,4 +733,9 @@ Open this webpage:
 https://www.girinst.org/censor/
 
 you should se this:
+
+.. image:: CENSOR captura.png
+   :alt: Descripción de la imagen
+   :width: 6000px
+   :align: center
 
