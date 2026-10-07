@@ -543,22 +543,16 @@ Ahora que sabemos que funciona, lo unico único que tenemos que hacer es extende
   )
   
   
+  
   # ============================================================
   # Check required programs
   # ============================================================
   
+  import shutil
+  
   for program in ["samtools", "blastn"]:
   
-      try:
-  
-          subprocess.run(
-              [program, "--version"],
-              stdout=subprocess.DEVNULL,
-              stderr=subprocess.DEVNULL,
-              check=True
-          )
-  
-      except Exception:
+      if shutil.which(program) is None:
   
           sys.exit(
               f"ERROR: {program} was not found "
@@ -1193,7 +1187,6 @@ Ahora que sabemos que funciona, lo unico único que tenemos que hacer es extende
               f"A={row['Block_A_hits']} "
               f"B={row['Block_B_hits']}"
           )
-  EOF
 
 
 .. code-block:: bash
