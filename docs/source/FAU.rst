@@ -294,5 +294,7 @@ You should see something like this:
 
 You should see something like this:
 
+.. code-block::
+
   Created: /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FAU/intermediate/FAU_same_scaffold_paralogs.tsv
   Candidate FAU paralogs: 15
