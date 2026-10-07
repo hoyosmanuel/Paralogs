@@ -74,10 +74,23 @@ I. Install SLiM
 
 
 2) Execute
------------------------------------
+-----------
 
 .. code-block:: bash
 
 
   chmod +x ANALYSES/FAU/scripts/01_find_FAU_hits.sh
   ./ANALYSES/FAU/scripts/01_find_FAU_hits.sh
+
+You should see something like this:
+
+  ./ANALYSES/FAU/scripts/01_find_FAU_hits.sh
+  Created:
+  /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FAU/intermediate/FAU_all_hits.tsv
+  
+  FAU projections:
+       118
+  
+  Species represented:
+       103
+  (base) manuelhoyos@MacBookPro bat_HTF_genomic_analysis %
