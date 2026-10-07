@@ -282,3 +282,12 @@ You should see something like this:
   print(f"Created: {OUTPUT}")
   print(f"Candidate FAU paralogs: {len(candidate_pairs)}")
   EOF
+
+
+2) Execute
+-----------
+
+.. code-block:: bash
+
+  chmod +x ANALYSES/FAU/scripts/02_identify_FAU_paralogs.py
+  python ANALYSES/FAU/scripts/02_identify_FAU_paralogs.py
