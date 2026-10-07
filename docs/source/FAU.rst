@@ -326,8 +326,8 @@ Now we check if that sh*t worked:
 
 
 
-3) Check if Charlie 8 is adjacent to the 3' end in the next 10 kb
-------------------------------------------------------------------
+3) Check if Charlie 8 is adjacent to the 3' end in the next 3 kb after the last exon of the paralog
+----------------------------------------------------------------------------------------------------
 
 .. code-block:: bash
 
@@ -570,7 +570,7 @@ Execute
 .. code-block:: bash
 
   chmod +x ANALYSES/FAU/scripts/03_extract_FAU_3prime_3kb.sh
-  ./ANALYSES/FAU/scripts/03_extract_FAU_3prime_10kb.sh
+  ./ANALYSES/FAU/scripts/03_extract_FAU_3prime_3kb.sh
 
 
 Verify 
@@ -578,7 +578,7 @@ Verify
 
 .. code-block:: bash
 
-  (samtools_env) manuelhoyos@MacBookPro bat_HTF_genomic_analysis % for f in ANALYSES/FAU/sequences/3prime_10kb/*.fa; do
+  for f in ANALYSES/FAU/sequences/3prime_10kb/*.fa; do
       printf "%s\t" "$(basename "$f")"
       grep -v '^>' "$f" | tr -d '\n' | wc -c
   done
@@ -587,22 +587,21 @@ You should see something like this:
 
 .. code-block::
 
-  Carollia_perspicillata_FAU_paralog_3prime_10kb.fa	   10000
-  Cynopterus_sphinx_FAU_paralog_3prime_10kb.fa	   10000
-  Eonycteris_spelaea_FAU_paralog_3prime_10kb.fa	   10000
-  Hipposideros_abae_FAU_paralog_3prime_10kb.fa	   10000
-  Hipposideros_armiger_FAU_paralog_3prime_10kb.fa	   10000
-  Hipposideros_caffer_FAU_paralog_3prime_10kb.fa	   10000
-  Hipposideros_jonesi_FAU_paralog_3prime_10kb.fa	   10000
-  Hipposideros_swinhoei_FAU_paralog_3prime_10kb.fa	   10000
-  Lonchorhina_inusitata_FAU_paralog_3prime_10kb.fa	   10000
-  Miniopterus_australis_FAU_paralog_3prime_10kb.fa	   10000
-  Miniopterus_natalensis_FAU_paralog_3prime_10kb.fa	   10000
-  Miniopterus_schreibersii_FAU_paralog_3prime_10kb.fa	   10000
-  Rhinopoma_microphyllum_FAU_paralog_3prime_10kb.fa	   10000
-  Rhinopoma_muscatellum_FAU_paralog_3prime_10kb.fa	   10000
-  Rousettus_aegyptiacus_FAU_paralog_3prime_10kb.fa	   10000
-
+  Carollia_perspicillata_FAU_paralog_3prime_3kb.fa	    3000
+  Cynopterus_sphinx_FAU_paralog_3prime_3kb.fa	    3000
+  Eonycteris_spelaea_FAU_paralog_3prime_3kb.fa	    3000
+  Hipposideros_abae_FAU_paralog_3prime_3kb.fa	    3000
+  Hipposideros_armiger_FAU_paralog_3prime_3kb.fa	    3000
+  Hipposideros_caffer_FAU_paralog_3prime_3kb.fa	    3000
+  Hipposideros_jonesi_FAU_paralog_3prime_3kb.fa	    3000
+  Hipposideros_swinhoei_FAU_paralog_3prime_3kb.fa	    3000
+  Lonchorhina_inusitata_FAU_paralog_3prime_3kb.fa	    3000
+  Miniopterus_australis_FAU_paralog_3prime_3kb.fa	    3000
+  Miniopterus_natalensis_FAU_paralog_3prime_3kb.fa	    3000
+  Miniopterus_schreibersii_FAU_paralog_3prime_3kb.fa	    3000
+  Rhinopoma_microphyllum_FAU_paralog_3prime_3kb.fa	    3000
+  Rhinopoma_muscatellum_FAU_paralog_3prime_3kb.fa	    3000
+  Rousettus_aegyptiacus_FAU_paralog_3prime_3kb.fa	    3000
 
 
 
@@ -623,7 +622,7 @@ You should see something like this:
   # 04_make_FAU_CENSOR_fasta.sh
   #
   # Objective:
-  # Combine the 15 FAU paralog 3' 10-kb genomic regions into
+  # Combine the 15 FAU paralog 3' 3-kb genomic regions into
   # a single multi-FASTA file for submission to CENSOR/Repbase.
   #
   # Each FASTA header contains:
@@ -633,8 +632,8 @@ You should see something like this:
   #   - paralog strand
   #
   # Input:
-  #   intermediate/FAU_3prime_10kb_regions.tsv
-  #   sequences/3prime_10kb/*.fa
+  #   intermediate/FAU_3prime_3kb_regions.tsv
+  #   sequences/3prime_3kb/*.fa
   #
   # Output:
   #   sequences/FAU_15_paralogs_3prime_10kb_CENSOR.fa
@@ -642,11 +641,11 @@ You should see something like this:
   
   ROOT="/Volumes/Expansion/project3/bat_HTF_genomic_analysis"
   
-  REGIONS="$ROOT/ANALYSES/FAU/intermediate/FAU_3prime_10kb_regions.tsv"
+  REGIONS="$ROOT/ANALYSES/FAU/intermediate/FAU_3prime_3kb_regions.tsv"
   
-  SEQDIR="$ROOT/ANALYSES/FAU/sequences/3prime_10kb"
+  SEQDIR="$ROOT/ANALYSES/FAU/sequences/3prime_3kb"
   
-  OUT="$ROOT/ANALYSES/FAU/sequences/FAU_15_paralogs_3prime_10kb_CENSOR.fa"
+  OUT="$ROOT/ANALYSES/FAU/sequences/FAU_15_paralogs_3prime_3kb_CENSOR.fa"
   
   
   # Start with an empty output file
@@ -659,7 +658,7 @@ You should see something like this:
       species scaffold paralog_start paralog_end strand region_start region_end fasta
   do
   
-      infile="$SEQDIR/${species}_FAU_paralog_3prime_10kb.fa"
+      infile="$SEQDIR/${species}_FAU_paralog_3prime_3kb.fa"
   
       if [[ ! -s "$infile" ]]; then
           echo "ERROR: missing sequence for $species" >&2
@@ -668,7 +667,7 @@ You should see something like this:
   
   
       # Informative FASTA header
-      printf ">%s|%s:%s-%s|FAU_paralog_3prime_10kb|strand=%s\n" \
+      printf ">%s|%s:%s-%s|FAU_paralog_3prime_3kb|strand=%s\n" \
           "$species" \
           "$scaffold" \
           "$region_start" \
@@ -704,10 +703,8 @@ You should see this:
 
 .. code-block::
 
-  (samtools_env) manuelhoyos@MacBookPro bat_HTF_genomic_analysis %   chmod +x ANALYSES/FAU/scripts/04_make_FAU_CENSOR_fasta.sh
-    ./ANALYSES/FAU/scripts/04_make_FAU_CENSOR_fasta.sh
   Created:
-  /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FAU/sequences/FAU_15_paralogs_3prime_10kb_CENSOR.fa
+  /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FAU/sequences/FAU_15_paralogs_3prime_3kb_CENSOR.fa
 
 
 5) Send the FASTA to CENSOR
