@@ -545,3 +545,43 @@ Now we check if that sh*t worked:
   echo "Region table:"
   echo "$REGIONS"
   EOF
+
+
+Execute
+~~~~~~~~
+
+.. code-block:: bash
+
+  chmod +x ANALYSES/FAU/scripts/03_extract_FAU_3prime_10kb.sh
+  ./ANALYSES/FAU/scripts/03_extract_FAU_3prime_10kb.sh
+
+
+Verify 
+~~~~~~
+
+.. code-block:: bash
+
+  (samtools_env) manuelhoyos@MacBookPro bat_HTF_genomic_analysis % for f in ANALYSES/FAU/sequences/3prime_10kb/*.fa; do
+      printf "%s\t" "$(basename "$f")"
+      grep -v '^>' "$f" | tr -d '\n' | wc -c
+  done
+
+You should see something like this:
+
+.. code-block::
+
+  Carollia_perspicillata_FAU_paralog_3prime_10kb.fa	   10000
+  Cynopterus_sphinx_FAU_paralog_3prime_10kb.fa	   10000
+  Eonycteris_spelaea_FAU_paralog_3prime_10kb.fa	   10000
+  Hipposideros_abae_FAU_paralog_3prime_10kb.fa	   10000
+  Hipposideros_armiger_FAU_paralog_3prime_10kb.fa	   10000
+  Hipposideros_caffer_FAU_paralog_3prime_10kb.fa	   10000
+  Hipposideros_jonesi_FAU_paralog_3prime_10kb.fa	   10000
+  Hipposideros_swinhoei_FAU_paralog_3prime_10kb.fa	   10000
+  Lonchorhina_inusitata_FAU_paralog_3prime_10kb.fa	   10000
+  Miniopterus_australis_FAU_paralog_3prime_10kb.fa	   10000
+  Miniopterus_natalensis_FAU_paralog_3prime_10kb.fa	   10000
+  Miniopterus_schreibersii_FAU_paralog_3prime_10kb.fa	   10000
+  Rhinopoma_microphyllum_FAU_paralog_3prime_10kb.fa	   10000
+  Rhinopoma_muscatellum_FAU_paralog_3prime_10kb.fa	   10000
+  Rousettus_aegyptiacus_FAU_paralog_3prime_10kb.fa	   10000
