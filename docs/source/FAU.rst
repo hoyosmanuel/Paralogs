@@ -1711,4 +1711,4 @@ Execute
 .. code-block:: bash
 
   chmod +x ANALYSES/FAU/scripts/06_extract_FAU_paralog_blocks.py
-  python ANALYSES/FAU/scripts/06_extract_FAU_paralog_blocks.py
+  python3 ANALYSES/FAU/scripts/06_extract_FAU_paralog_blocks.py
