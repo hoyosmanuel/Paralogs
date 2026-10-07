@@ -738,3 +738,977 @@ https://www.girinst.org/cgi-bin/censor/show_results.cgi?id=40507&lib=root
 
 
 At this point, we confirmed that all 15 paralogs have the TE immediately adjacent to the 3′ region of interest. We can therefore extract the FAU paralog exons, align the sequences from all 15 species, and assess how well conserved the paralog is relative to the parental FAU gene. We can then map the alignment results onto the phylogenetic tree and visualize the pattern of conservation across species.
+
+
+6) Extraer los exones
+----------------------
+
+.. code-block:: bash
+
+  cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
+  mkdir -p ANALYSES/FAU/sequences/paralog_projected_blocks
+  nano ANALYSES/FAU/scripts/06_extract_FAU_paralog_blocks.py
+
+.. code-block:: python
+
+  #!/usr/bin/env python3
+  
+  from pathlib import Path
+  from collections import defaultdict
+  import csv
+  import subprocess
+  import sys
+  
+  
+  # ============================================================
+  # Paths
+  # ============================================================
+  
+  ROOT = Path("/Volumes/Expansion/project3/bat_HTF_genomic_analysis")
+  
+  FAU_DIR = ROOT / "ANALYSES" / "FAU"
+  
+  INPUT_TSV = (
+      FAU_DIR
+      / "intermediate"
+      / "FAU_same_scaffold_paralogs.tsv"
+  )
+  
+  OUTDIR = (
+      FAU_DIR
+      / "sequences"
+      / "paralog_projected_blocks"
+  )
+  
+  METADATA_OUT = (
+      FAU_DIR
+      / "intermediate"
+      / "FAU_paralog_projected_blocks.tsv"
+  )
+  
+  OUTDIR.mkdir(parents=True, exist_ok=True)
+  
+  
+  # ============================================================
+  # Utility functions
+  # ============================================================
+  
+  def reverse_complement(seq):
+      """
+      Reverse-complement a DNA sequence, including IUPAC ambiguity codes.
+      """
+      table = str.maketrans(
+          "ACGTRYMKSWBDHVNacgtrymkswbdhvn",
+          "TGCAYRKMSWVHDBNtgcayrkmswvhdbn"
+      )
+  
+      return seq.translate(table)[::-1]
+  
+  
+  def find_genome_fasta(species_dir):
+      """
+      Find the genome FASTA in the top level of the species directory.
+  
+      If more than one FASTA file is present, use the largest one.
+      """
+  
+      candidates = []
+  
+      for pattern in ("*.fa", "*.fasta", "*.fna"):
+          candidates.extend(
+              species_dir.glob(pattern)
+          )
+  
+      candidates = [
+          p
+          for p in candidates
+          if p.is_file()
+      ]
+  
+      if not candidates:
+          raise FileNotFoundError(
+              f"No genome FASTA found in {species_dir}"
+          )
+  
+      return max(
+          candidates,
+          key=lambda p: p.stat().st_size
+      )
+  
+  
+  def ensure_fai(fasta):
+      """
+      Create a samtools FASTA index if it does not already exist.
+      """
+  
+      fai = Path(
+          str(fasta) + ".fai"
+      )
+  
+      if not fai.exists():
+  
+          print(
+              f"Indexing {fasta.name} ...",
+              file=sys.stderr
+          )
+  
+          subprocess.run(
+              [
+                  "samtools",
+                  "faidx",
+                  str(fasta)
+              ],
+              check=True
+          )
+  
+  
+  def fetch_sequence(
+      fasta,
+      chrom,
+      start0,
+      end0
+  ):
+      """
+      Extract sequence with samtools faidx.
+  
+      Input coordinates use BED convention:
+  
+          start0 = 0-based inclusive
+          end0   = 0-based exclusive
+  
+      samtools faidx uses:
+  
+          1-based inclusive coordinates.
+      """
+  
+      start1 = start0 + 1
+      end1 = end0
+  
+      region = (
+          f"{chrom}:"
+          f"{start1}-"
+          f"{end1}"
+      )
+  
+      result = subprocess.run(
+          [
+              "samtools",
+              "faidx",
+              str(fasta),
+              region
+          ],
+          check=True,
+          capture_output=True,
+          text=True
+      )
+  
+      lines = (
+          result.stdout
+          .strip()
+          .splitlines()
+      )
+  
+      if not lines:
+          raise RuntimeError(
+              f"No sequence returned for "
+              f"{fasta} {region}"
+          )
+  
+      seq = "".join(
+          lines[1:]
+      ).upper()
+  
+      expected_length = (
+          end0 - start0
+      )
+  
+      if len(seq) != expected_length:
+  
+          raise RuntimeError(
+              f"Length mismatch for {region}: "
+              f"expected {expected_length}, "
+              f"got {len(seq)}"
+          )
+  
+      return seq
+  
+  
+  def find_projection_bed_record(
+      bedfile,
+      scaffold,
+      start,
+      end,
+      strand
+  ):
+      """
+      Find the exact FAU paralog projection in query_annotation.bed
+      using scaffold, start, end, strand, and the FAU projection label.
+      """
+  
+      matches = []
+  
+      with open(bedfile) as fh:
+  
+          for line in fh:
+  
+              if (
+                  not line.strip()
+                  or line.startswith("#")
+              ):
+                  continue
+  
+              fields = (
+                  line
+                  .rstrip("\n")
+                  .split("\t")
+              )
+  
+              if len(fields) < 12:
+                  continue
+  
+              chrom = fields[0]
+  
+              bed_start = int(
+                  fields[1]
+              )
+  
+              bed_end = int(
+                  fields[2]
+              )
+  
+              projection = fields[3]
+  
+              bed_strand = fields[5]
+  
+              if (
+                  chrom == scaffold
+                  and bed_start == start
+                  and bed_end == end
+                  and bed_strand == strand
+                  and "#FAU#" in projection
+              ):
+  
+                  matches.append(
+                      fields
+                  )
+  
+      if len(matches) != 1:
+  
+          raise RuntimeError(
+              f"Expected exactly one BED record for "
+              f"{scaffold}:{start}-{end}({strand}), "
+              f"found {len(matches)}"
+          )
+  
+      return matches[0]
+  
+  
+  def write_fasta(
+      path,
+      records
+  ):
+      """
+      Write FASTA records using 80 nt per line.
+      """
+  
+      with open(path, "w") as out:
+  
+          for header, seq in records:
+  
+              out.write(
+                  f">{header}\n"
+              )
+  
+              for i in range(
+                  0,
+                  len(seq),
+                  80
+              ):
+  
+                  out.write(
+                      seq[i:i + 80]
+                      + "\n"
+                  )
+  
+  
+  # ============================================================
+  # Main
+  # ============================================================
+  
+  def main():
+  
+      if not INPUT_TSV.exists():
+  
+          raise FileNotFoundError(
+              f"Missing input table: "
+              f"{INPUT_TSV}"
+          )
+  
+  
+      records_by_block = defaultdict(
+          list
+      )
+  
+      metadata = []
+  
+      species_processed = []
+  
+  
+      # ========================================================
+      # Read the 15 FAU paralog candidates
+      # ========================================================
+  
+      with open(INPUT_TSV) as fh:
+  
+          reader = csv.DictReader(
+              fh,
+              delimiter="\t"
+          )
+  
+  
+          required_columns = {
+              "Species",
+              "Scaffold",
+              "Paralog_start",
+              "Paralog_end",
+              "Paralog_strand"
+          }
+  
+  
+          missing = (
+              required_columns
+              - set(
+                  reader.fieldnames
+                  or []
+              )
+          )
+  
+  
+          if missing:
+  
+              raise RuntimeError(
+                  "Missing required columns "
+                  "in input TSV: "
+                  + ", ".join(
+                      sorted(missing)
+                  )
+              )
+  
+  
+          # ====================================================
+          # Process each species
+          # ====================================================
+  
+          for row in reader:
+  
+              species = (
+                  row["Species"]
+              )
+  
+              scaffold = (
+                  row["Scaffold"]
+              )
+  
+              paralog_start = int(
+                  row["Paralog_start"]
+              )
+  
+              paralog_end = int(
+                  row["Paralog_end"]
+              )
+  
+              strand = (
+                  row["Paralog_strand"]
+              )
+  
+  
+              species_processed.append(
+                  species
+              )
+  
+  
+              species_dir = (
+                  ROOT
+                  / "SPECIES"
+                  / species
+              )
+  
+  
+              bedfile = (
+                  species_dir
+                  / "query_annotation.bed"
+              )
+  
+  
+              if not species_dir.exists():
+  
+                  raise FileNotFoundError(
+                      f"Missing species directory: "
+                      f"{species_dir}"
+                  )
+  
+  
+              if not bedfile.exists():
+  
+                  raise FileNotFoundError(
+                      f"Missing BED file: "
+                      f"{bedfile}"
+                  )
+  
+  
+              # =================================================
+              # Locate genome assembly
+              # =================================================
+  
+              fasta = find_genome_fasta(
+                  species_dir
+              )
+  
+  
+              ensure_fai(
+                  fasta
+              )
+  
+  
+              print(
+                  f"\n{species}",
+                  file=sys.stderr
+              )
+  
+  
+              print(
+                  f"  genome: "
+                  f"{fasta.name}",
+                  file=sys.stderr
+              )
+  
+  
+              print(
+                  f"  paralog: "
+                  f"{scaffold}:"
+                  f"{paralog_start}-"
+                  f"{paralog_end}"
+                  f"({strand})",
+                  file=sys.stderr
+              )
+  
+  
+              # =================================================
+              # Find exact FAU projection in BED12
+              # =================================================
+  
+              bed = find_projection_bed_record(
+                  bedfile,
+                  scaffold,
+                  paralog_start,
+                  paralog_end,
+                  strand
+              )
+  
+  
+              chrom_start = int(
+                  bed[1]
+              )
+  
+  
+              projection = (
+                  bed[3]
+              )
+  
+  
+              block_count = int(
+                  bed[9]
+              )
+  
+  
+              block_sizes = [
+                  int(x)
+                  for x in
+                  bed[10]
+                  .rstrip(",")
+                  .split(",")
+                  if x
+              ]
+  
+  
+              block_starts = [
+                  int(x)
+                  for x in
+                  bed[11]
+                  .rstrip(",")
+                  .split(",")
+                  if x
+              ]
+  
+  
+              # =================================================
+              # Sanity checks
+              # =================================================
+  
+              if (
+                  len(block_sizes)
+                  != block_count
+              ):
+  
+                  raise RuntimeError(
+                      f"{species}: "
+                      f"blockSizes count "
+                      f"({len(block_sizes)}) "
+                      f"does not match "
+                      f"blockCount "
+                      f"({block_count})"
+                  )
+  
+  
+              if (
+                  len(block_starts)
+                  != block_count
+              ):
+  
+                  raise RuntimeError(
+                      f"{species}: "
+                      f"blockStarts count "
+                      f"({len(block_starts)}) "
+                      f"does not match "
+                      f"blockCount "
+                      f"({block_count})"
+                  )
+  
+  
+              print(
+                  f"  TOGA blocks: "
+                  f"{block_count}",
+                  file=sys.stderr
+              )
+  
+  
+              # =================================================
+              # Build genomic blocks
+              #
+              # BED block order is always low genomic coordinate
+              # to high genomic coordinate.
+              # =================================================
+  
+              genomic_blocks = []
+  
+  
+              for (
+                  genomic_index,
+                  (
+                      rel_start,
+                      size
+                  )
+              ) in enumerate(
+                  zip(
+                      block_starts,
+                      block_sizes
+                  ),
+                  start=1
+              ):
+  
+                  start0 = (
+                      chrom_start
+                      + rel_start
+                  )
+  
+                  end0 = (
+                      start0
+                      + size
+                  )
+  
+  
+                  genomic_blocks.append(
+                      {
+                          "bed_block":
+                              genomic_index,
+  
+                          "start0":
+                              start0,
+  
+                          "end0":
+                              end0,
+  
+                          "size":
+                              size
+                      }
+                  )
+  
+  
+              # =================================================
+              # Convert BED genomic order to transcript order
+              #
+              # + strand:
+              # genomic order = transcript order
+              #
+              # - strand:
+              # genomic order must be reversed
+              # =================================================
+  
+              if strand == "+":
+  
+                  transcript_blocks = (
+                      genomic_blocks
+                  )
+  
+  
+              elif strand == "-":
+  
+                  transcript_blocks = list(
+                      reversed(
+                          genomic_blocks
+                      )
+                  )
+  
+  
+              else:
+  
+                  raise RuntimeError(
+                      f"{species}: "
+                      f"unexpected strand "
+                      f"value '{strand}'"
+                  )
+  
+  
+              # =================================================
+              # Extract each projected block
+              # =================================================
+  
+              for (
+                  transcript_index,
+                  block
+              ) in enumerate(
+                  transcript_blocks,
+                  start=1
+              ):
+  
+                  start0 = (
+                      block["start0"]
+                  )
+  
+                  end0 = (
+                      block["end0"]
+                  )
+  
+  
+                  seq = fetch_sequence(
+                      fasta,
+                      scaffold,
+                      start0,
+                      end0
+                  )
+  
+  
+                  # =============================================
+                  # Put sequence in transcript orientation
+                  # =============================================
+  
+                  if strand == "-":
+  
+                      seq = reverse_complement(
+                          seq
+                      )
+  
+  
+                  # =============================================
+                  # Save sequence for multispecies FASTA
+                  # =============================================
+  
+                  records_by_block[
+                      transcript_index
+                  ].append(
+                      (
+                          species,
+                          seq
+                      )
+                  )
+  
+  
+                  # =============================================
+                  # Save metadata
+                  # =============================================
+  
+                  metadata.append(
+                      {
+                          "Species":
+                              species,
+  
+                          "Projection":
+                              projection,
+  
+                          "Scaffold":
+                              scaffold,
+  
+                          "Strand":
+                              strand,
+  
+                          "Transcript_block":
+                              transcript_index,
+  
+                          "BED_block":
+                              block[
+                                  "bed_block"
+                              ],
+  
+                          "Start_0based":
+                              start0,
+  
+                          "End_0based":
+                              end0,
+  
+                          "Start_1based":
+                              start0 + 1,
+  
+                          "End_1based":
+                              end0,
+  
+                          "Length":
+                              len(seq),
+  
+                          "Genome_FASTA":
+                              fasta.name
+                      }
+                  )
+  
+  
+                  print(
+                      f"    transcript block "
+                      f"{transcript_index}: "
+                      f"{start0 + 1}-"
+                      f"{end0} "
+                      f"({len(seq)} bp)",
+                      file=sys.stderr
+                  )
+  
+  
+      # ========================================================
+      # Global sanity checks
+      # ========================================================
+  
+      number_species = len(
+          species_processed
+      )
+  
+  
+      if (
+          len(
+              set(species_processed)
+          )
+          != number_species
+      ):
+  
+          raise RuntimeError(
+              "Duplicate species found in "
+              "FAU_same_scaffold_paralogs.tsv"
+          )
+  
+  
+      if number_species != 15:
+  
+          print(
+              f"\nWARNING: expected "
+              f"15 FAU paralog candidates, "
+              f"but found "
+              f"{number_species}.",
+              file=sys.stderr
+          )
+  
+  
+      # ========================================================
+      # Write one multispecies FASTA per projected block
+      # ========================================================
+  
+      for block_number in sorted(
+          records_by_block
+      ):
+  
+          outfile = (
+              OUTDIR
+              / (
+                  f"FAU_paralog_"
+                  f"projected_block"
+                  f"{block_number}.fa"
+              )
+          )
+  
+  
+          write_fasta(
+              outfile,
+              records_by_block[
+                  block_number
+              ]
+          )
+  
+  
+      # ========================================================
+      # Write metadata table
+      # ========================================================
+  
+      fieldnames = [
+          "Species",
+          "Projection",
+          "Scaffold",
+          "Strand",
+          "Transcript_block",
+          "BED_block",
+          "Start_0based",
+          "End_0based",
+          "Start_1based",
+          "End_1based",
+          "Length",
+          "Genome_FASTA"
+      ]
+  
+  
+      with open(
+          METADATA_OUT,
+          "w",
+          newline=""
+      ) as out:
+  
+          writer = csv.DictWriter(
+              out,
+              fieldnames=fieldnames,
+              delimiter="\t"
+          )
+  
+          writer.writeheader()
+  
+          writer.writerows(
+              metadata
+          )
+  
+  
+      # ========================================================
+      # Final summary
+      # ========================================================
+  
+      print(
+          "\n"
+          "========================================"
+      )
+  
+      print(
+          "FAU paralog projected-block extraction"
+      )
+  
+      print(
+          "========================================"
+      )
+  
+  
+      print(
+          f"\nSpecies processed: "
+          f"{number_species}"
+      )
+  
+  
+      total_blocks = 0
+  
+  
+      for block_number in sorted(
+          records_by_block
+      ):
+  
+          records = (
+              records_by_block[
+                  block_number
+              ]
+          )
+  
+  
+          lengths = [
+              len(seq)
+              for _, seq
+              in records
+          ]
+  
+  
+          total_blocks += (
+              len(records)
+          )
+  
+  
+          length_string = ",".join(
+              str(length)
+              for length
+              in lengths
+          )
+  
+  
+          print(
+              f"\nProjected block "
+              f"{block_number}:"
+          )
+  
+  
+          print(
+              f"  sequences: "
+              f"{len(records)}"
+          )
+  
+  
+          print(
+              f"  min length: "
+              f"{min(lengths)} bp"
+          )
+  
+  
+          print(
+              f"  max length: "
+              f"{max(lengths)} bp"
+          )
+  
+  
+          print(
+              f"  lengths: "
+              f"{length_string}"
+          )
+  
+  
+      print(
+          f"\nTotal projected blocks "
+          f"extracted: "
+          f"{total_blocks}"
+      )
+  
+  
+      print(
+          "\nFASTA files:"
+      )
+  
+  
+      print(
+          f"  {OUTDIR}"
+      )
+  
+  
+      print(
+          "\nMetadata:"
+      )
+  
+  
+      print(
+          f"  {METADATA_OUT}"
+      )
+  
+  
+      print(
+          "\nDone."
+      )
+  
+  
+  # ============================================================
+  # Run
+  # ============================================================
+  
+  if __name__ == "__main__":
+      main()
+
+
+Execute
+~~~~~~~~
+
+.. code-block:: bash
+
+  chmod +x ANALYSES/FAU/scripts/06_extract_FAU_paralog_blocks.py
+  python ANALYSES/FAU/scripts/06_extract_FAU_paralog_blocks.py
