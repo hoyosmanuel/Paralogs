@@ -1,1 +1,9 @@
+I. IDENTIFICAR LOS PARALOGOS DE FBXO3
+=====================================
 
+1) Script to extract FBXO3s from TOGA
+--------------------------------------
+
+.. code-block:: bash
+
+  cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
