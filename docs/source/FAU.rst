@@ -291,3 +291,8 @@ You should see something like this:
 
   chmod +x ANALYSES/FAU/scripts/02_identify_FAU_paralogs.py
   python ANALYSES/FAU/scripts/02_identify_FAU_paralogs.py
+
+You should see something like this:
+
+  Created: /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FAU/intermediate/FAU_same_scaffold_paralogs.tsv
+  Candidate FAU paralogs: 15
