@@ -1,8 +1,8 @@
 I. Install SLiM
 ================
 
-1) Set Directories: 
-----------------------------------
+1) Script to extract FAUs from TOGA
+-----------------------------------
 
 .. code-block:: bash
 
@@ -70,3 +70,14 @@ I. Install SLiM
   echo "Species represented:"
   awk 'NR > 1 {print $1}' "$OUT" | sort -u | wc -l
   EOF
+
+
+
+2) Execute
+-----------------------------------
+
+.. code-block:: bash
+
+
+  chmod +x ANALYSES/FAU/scripts/01_find_FAU_hits.sh
+  ./ANALYSES/FAU/scripts/01_find_FAU_hits.sh
