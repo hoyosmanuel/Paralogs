@@ -340,3 +340,45 @@ Execute
 
   chmod +x ANALYSES/FBXO3/scripts/02_identify_FBXO3_paralogs.py
   python3 ANALYSES/FBXO3/scripts/02_identify_FBXO3_paralogs.py
+
+Check
+~~~~~~~
+
+.. code-block:: bash
+
+  column -t ANALYSES/FBXO3/intermediate/FBXO3_same_scaffold_candidates_raw.tsv
+
+.. code-block::
+
+  Species                       Scaffold            Paralog_start  Paralog_end  Paralog_strand  Paralog_blocks  Paralog_projection             Canonical_start  Canonical_end  Canonical_strand  Canonical_projection
+  Furipterus_horrens            manual_scaffold_2   21367653       21374263     +               2               ENST00000265651.8#FBXO3#1544   21311325         21341748       +                 ENST00000265651.8#FBXO3#12
+  Rhinolophus_affinis           manual_scaffold_10  24007134       24035799     +               4               ENST00000265651.8#FBXO3#14959  24028650         24062946       +                 ENST00000265651.8#FBXO3#10
+  Rhinolophus_ferrumequinum     scaffold_m29_p_11   66435470       66442140     -               3               ENST00000265651.8#FBXO3#3193   66387236         66420715       -                 ENST00000265651.8#FBXO3#10
+  Rhinolophus_foetidus          manual_scaffold_3   23142453       23170541     +               3               ENST00000265651.8#FBXO3#87521  23163248         23203534       +                 ENST00000265651.8#FBXO3#10
+  Rhinolophus_hipposideros      OZ077427            23133777       23140949     +               3               ENST00000265651.8#FBXO3#4854   23157144         23189003       +                 ENST00000265651.8#FBXO3#11
+  Rhinolophus_pearsonii         LG06                23301452       23308437     +               3               ENST00000265651.8#FBXO3#45504  23324429         23358662       +                 ENST00000265651.8#FBXO3#10
+  Rhinolophus_pearsonii         LG06                23301452       23308437     +               3               ENST00000265651.8#FBXO3#62166  23324429         23358662       +                 ENST00000265651.8#FBXO3#10
+  Rhinolophus_pearsonii         LG06                23305776       23308437     +               2               ENST00000265651.8#FBXO3#66679  23324429         23358662       +                 ENST00000265651.8#FBXO3#10
+  Rhinolophus_perniger_lanosus  manual_scaffold_11  23126157       23130990     +               3               ENST00000265651.8#FBXO3#18956  23147124         23180555       +                 ENST00000265651.8#FBXO3#10
+  Rhinolophus_sedulus           manual_scaffold_10  23488810       23496589     +               3               ENST00000265651.8#FBXO3#6681   23513107         23548693       +                 ENST00000265651.8#FBXO3#10
+  Triaenops_persicus            manual_scaffold_3   22901609       22933074     +               4               ENST00000265651.8#FBXO3#12820  22924851         22956878       +                 ENST00000265651.8#FBXO3#10
+
+
+Missing Rhinolophus sinicus gene while present in clade. Need to verify.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+sabemos que el parálogo tiene estas dos secuencias:
+seq1="TTGTTGCTATGTCAATCGAAGACTTTGCCAGCTCTCAAGTCATGATCCGCTATGGAGAAGACATTGCAAAAGATACTGGCTGATATCTGA"
+seq2="GGAAGACAAAGCACAGAAGAATCAGTGCTGGAAATCTCTCTTCATTGATACTTACTCTGATGTAGGAAGATATATTGACCATTATGCTGCTGTTAAAAAGGCCTGGGCCGATCTCAAGAAATATTTGGAGCCCAGACCTCCTCAGATGACTTTGTCTCTGCAAG"
+
+Así que podemos buscar la ocurrencia de mas de una vez de esas dos secuencias en el el mismo Scaffold
+Entonces hay que crear un fasta sonda de prueba:
+
+.. code-block:: bash
+
+  cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
+  >FBXO3_block_A
+  TTGTTGCTATGTCAATCGAAGACTTTGCCAGCTCTCAAGTCATGATCCGCTATGGAGAAGACATTGCAAAAGATACTGGCTGATATCTGA
+  >FBXO3_block_B
+  GGAAGACAAAGCACAGAAGAATCAGTGCTGGAAATCTCTCTTCATTGATACTTACTCTGATGTAGGAAGATATATTGACCATTATGCTGCTGTTAAAAAGGCCTGGGCCGATCTCAAGAAATATTTGGAGCCCAGACCTCCTCAGATGACTTTGTCTCTGCAAG
+  EOF
