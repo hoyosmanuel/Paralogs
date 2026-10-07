@@ -734,23 +734,7 @@ https://www.girinst.org/censor/
 
 you should se this:
 
-.. image:: _static/CENSOR_captura.png
-   :alt: Descripción de la imagen
-   :width: 600px
-   :align: center
+https://www.girinst.org/cgi-bin/censor/show_results.cgi?id=40507&lib=root
 
 
-
-These are the results
-~~~~~~~~~~~~~~~~~~~~~~
-
-
-.. raw:: html
-
-   <iframe src="../_static/FAU.html"
-           width="100%"
-           height="900px"
-           style="border: 1px solid #ccc;">
-   </iframe>
-
-
+At this point, we confirmed that all 15 paralogs have the TE immediately adjacent to the 3′ region of interest. We can therefore extract the FAU paralog exons, align the sequences from all 15 species, and assess how well conserved the paralog is relative to the parental FAU gene. We can then map the alignment results onto the phylogenetic tree and visualize the pattern of conservation across species.
