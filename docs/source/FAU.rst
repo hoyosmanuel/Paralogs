@@ -739,3 +739,15 @@ you should se this:
    :width: 600px
    :align: center
 
+
+
+These are the results
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. image:: _static/FAU.html
+   :alt: Descripción de la imagen
+   :width: 600px
+   :align: center
+
+
