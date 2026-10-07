@@ -323,3 +323,225 @@ Now we check if that sh*t worked:
   Rhinopoma_microphyllum    manual_scaffold_11  2593698        2594697      +               3               2352088          2353204        -
   Rhinopoma_muscatellum     manual_scaffold_13  2682494        2683279      +               3               2424464          2425571        -
   Rousettus_aegyptiacus     scaffold_m13_p_5    116490444      116490766    +               2               116269377        116270435      -
+
+
+
+3) Check if Charlie 8 is adjacent to the 3' end in the next 10 kb
+------------------------------------------------------------------
+
+.. code-block:: bash
+
+  cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
+
+.. code-block:: bash
+
+  cat > ANALYSES/FAU/scripts/03_extract_FAU_3prime_10kb.sh <<'EOF'
+  #!/bin/bash
+  set -euo pipefail
+  
+  # ============================================================
+  # 03_extract_FAU_3prime_10kb.sh
+  #
+  # Objective:
+  # Extract 10 kb of genomic sequence immediately downstream
+  # (3') of each candidate FAU paralog.
+  #
+  # Strand matters:
+  #
+  #   Paralog on + strand:
+  #
+  #       FAU ------>
+  #                  |------ 10 kb 3' ------|
+  #
+  #   Paralog on - strand:
+  #
+  #       |------ 10 kb 3' ------|
+  #                              <------ FAU
+  #
+  # BED coordinates are 0-based, half-open.
+  # samtools faidx coordinates are 1-based, inclusive.
+  #
+  # Input:
+  #   FAU_same_scaffold_paralogs.tsv
+  #
+  # Output:
+  #   sequences/3prime_10kb/*.fa
+  #   intermediate/FAU_3prime_10kb_regions.tsv
+  # ============================================================
+  
+  
+  ROOT="/Volumes/Expansion/project3/bat_HTF_genomic_analysis"
+  
+  INPUT="$ROOT/ANALYSES/FAU/intermediate/FAU_same_scaffold_paralogs.tsv"
+  
+  OUTDIR="$ROOT/ANALYSES/FAU/sequences/3prime_10kb"
+  
+  REGIONS="$ROOT/ANALYSES/FAU/intermediate/FAU_3prime_10kb_regions.tsv"
+  
+  
+  # ------------------------------------------------------------
+  # Create output directory
+  # ------------------------------------------------------------
+  mkdir -p "$OUTDIR"
+  
+  
+  # ------------------------------------------------------------
+  # Metadata table describing every extracted region
+  # ------------------------------------------------------------
+  printf "Species\tScaffold\tParalog_start\tParalog_end\tStrand\tRegion_start\tRegion_end\tFASTA\n" > "$REGIONS"
+  
+  
+  # ------------------------------------------------------------
+  # Read candidate paralogs from the TSV file
+  # ------------------------------------------------------------
+  tail -n +2 "$INPUT" | \
+  while IFS=$'\t' read -r \
+      species scaffold paralog_start paralog_end strand paralog_blocks \
+      canonical_start canonical_end canonical_strand
+  do
+  
+      echo "===== $species ====="
+  
+  
+      # --------------------------------------------------------
+      # Find the uncompressed genome FASTA.
+      #
+      # Ignore AppleDouble files created by macOS (._filename).
+      # We expect exactly one real .fa file per species.
+      # --------------------------------------------------------
+      fasta=$(find "$ROOT/SPECIES/$species" \
+          -maxdepth 1 \
+          -type f \
+          -name "*.fa" \
+          ! -name "._*" \
+          -print)
+  
+  
+      # --------------------------------------------------------
+      # Make sure exactly one FASTA was found
+      # --------------------------------------------------------
+      fasta_count=$(printf '%s\n' "$fasta" | sed '/^$/d' | wc -l | tr -d ' ')
+  
+      if [[ "$fasta_count" -ne 1 ]]; then
+          echo "ERROR: expected exactly one .fa for $species, found $fasta_count" >&2
+          exit 1
+      fi
+  
+  
+      # --------------------------------------------------------
+      # Create FASTA index if necessary
+      # --------------------------------------------------------
+      if [[ ! -f "${fasta}.fai" ]]; then
+          echo "Creating FASTA index..."
+          samtools faidx "$fasta"
+      fi
+  
+  
+      # --------------------------------------------------------
+      # Determine the 3' genomic interval.
+      #
+      # IMPORTANT:
+      #
+      # paralog_start and paralog_end come from BED12:
+      #   start = 0-based
+      #   end   = exclusive
+      #
+      # samtools faidx expects:
+      #   start = 1-based
+      #   end   = inclusive
+      # --------------------------------------------------------
+  
+      if [[ "$strand" == "+" ]]; then
+  
+          # BED:
+          # [paralog_end, paralog_end + 10000)
+          #
+          # samtools:
+          # paralog_end + 1 ... paralog_end + 10000
+  
+          region_start=$((paralog_end + 1))
+          region_end=$((paralog_end + 10000))
+  
+  
+      elif [[ "$strand" == "-" ]]; then
+  
+          # BED:
+          # [paralog_start - 10000, paralog_start)
+          #
+          # samtools conversion:
+          # paralog_start - 9999 ... paralog_start
+  
+          region_start=$((paralog_start - 9999))
+          region_end=$paralog_start
+  
+  
+          # Prevent coordinates smaller than 1
+          if [[ "$region_start" -lt 1 ]]; then
+              region_start=1
+          fi
+  
+  
+      else
+          echo "ERROR: invalid strand '$strand' for $species" >&2
+          exit 1
+      fi
+  
+  
+      # --------------------------------------------------------
+      # Define samtools region
+      # --------------------------------------------------------
+      region="${scaffold}:${region_start}-${region_end}"
+  
+  
+      # --------------------------------------------------------
+      # Output FASTA
+      # --------------------------------------------------------
+      outfile="$OUTDIR/${species}_FAU_paralog_3prime_10kb.fa"
+  
+  
+      echo "FASTA:  $(basename "$fasta")"
+      echo "Region: $region"
+      echo "Output: $(basename "$outfile")"
+  
+  
+      # --------------------------------------------------------
+      # Extract genomic sequence.
+      #
+      # Note:
+      # Sequence remains in genomic orientation.
+      # We are selecting the biological 3' side using strand,
+      # but we are NOT reverse-complementing the sequence here.
+      # --------------------------------------------------------
+      samtools faidx "$fasta" "$region" > "$outfile"
+  
+  
+      # --------------------------------------------------------
+      # Record extraction metadata
+      # --------------------------------------------------------
+      printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+          "$species" \
+          "$scaffold" \
+          "$paralog_start" \
+          "$paralog_end" \
+          "$strand" \
+          "$region_start" \
+          "$region_end" \
+          "$(basename "$fasta")" \
+          >> "$REGIONS"
+  
+  done
+  
+  
+  echo
+  echo "========================================"
+  echo "Finished"
+  echo "========================================"
+  
+  echo
+  echo "Extracted FASTA files:"
+  find "$OUTDIR" -type f -name "*.fa" | wc -l
+  
+  echo
+  echo "Region table:"
+  echo "$REGIONS"
+  EOF
