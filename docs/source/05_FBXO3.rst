@@ -70,3 +70,11 @@ I. IDENTIFICAR LOS PARALOGOS DE FBXO3
   echo "Species represented:"
   awk 'NR > 1 {print $1}' "$OUT" | sort -u | wc -l
   EOF
+
+Execute
+~~~~~~~
+
+.. code-block:: bash
+
+  chmod +x ANALYSES/FBXO3/scripts/01_find_FBXO3_hits.sh
+  ./ANALYSES/FBXO3/scripts/01_find_FBXO3_hits.sh
