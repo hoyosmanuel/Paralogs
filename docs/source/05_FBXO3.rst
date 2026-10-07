@@ -377,8 +377,41 @@ Entonces hay que crear un fasta sonda de prueba:
 .. code-block:: bash
 
   cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
+  cat > ANALYSES/FBXO3/sequences/FBXO3_test_blocks.fa <<'EOF'
   >FBXO3_block_A
   TTGTTGCTATGTCAATCGAAGACTTTGCCAGCTCTCAAGTCATGATCCGCTATGGAGAAGACATTGCAAAAGATACTGGCTGATATCTGA
   >FBXO3_block_B
   GGAAGACAAAGCACAGAAGAATCAGTGCTGGAAATCTCTCTTCATTGATACTTACTCTGATGTAGGAAGATATATTGACCATTATGCTGCTGTTAAAAAGGCCTGGGCCGATCTCAAGAAATATTTGGAGCCCAGACCTCCTCAGATGACTTTGTCTCTGCAAG
   EOF
+
+Hagamos un index del scafold donde deberia estar el parálogo de FBXO3:
+
+.. code-block:: bash
+
+  cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
+  samtools faidx \
+  SPECIES/Rhinolophus_hipposideros/mRhiHip1.1.hap1.fa \
+  OZ077427 \
+  > ANALYSES/FBXO3/sequences/Rhinolophus_hipposideros_OZ077427.fa
+
+HAcemos una pequeña base de datos de blast
+
+mkdir -p ANALYSES/FBXO3/intermediate/blast_db
+
+.. code-block:: bash
+
+  makeblastdb \
+  -in ANALYSES/FBXO3/sequences/Rhinolophus_hipposideros_OZ077427.fa \
+  -dbtype nucl \
+  -out ANALYSES/FBXO3/intermediate/blast_db/RhiHip_OZ077427
+
+Buscamos las secuencias:
+
+.. code-block:: bash
+
+  blastn \
+  -query ANALYSES/FBXO3/sequences/FBXO3_test_blocks.fa \
+  -db ANALYSES/FBXO3/intermediate/blast_db/RhiHip_OZ077427 \
+  -task blastn-short \
+  -evalue 1e-5 \
+  -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore'
