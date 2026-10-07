@@ -685,6 +685,8 @@ Execute
 
 You should see this:
 
+.. code-block::
+
   (samtools_env) manuelhoyos@MacBookPro bat_HTF_genomic_analysis %   chmod +x ANALYSES/FAU/scripts/04_make_FAU_CENSOR_fasta.sh
     ./ANALYSES/FAU/scripts/04_make_FAU_CENSOR_fasta.sh
   Created:
