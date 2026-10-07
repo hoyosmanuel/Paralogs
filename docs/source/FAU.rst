@@ -747,11 +747,10 @@ These are the results
 
 .. raw:: html
 
-   <iframe
-       src="_static/FAU.html"
-       width="100%"
-       height="800"
-       style="border:1px solid #ccc;">
+   <iframe src="../_static/FAU.html"
+           width="100%"
+           height="900px"
+           style="border: 1px solid #ccc;">
    </iframe>
 
 
