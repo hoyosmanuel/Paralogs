@@ -1198,31 +1198,31 @@ Ahora que sabemos que funciona, lo unico único que tenemos que hacer es extende
 
 Results:
 ~~~~~~~~~
+.. code-block:: 
 
-========================================
-FBXO3 scaffold-wide BLAST complete
-========================================
-
-Raw hits:
-/Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FBXO3/results/FBXO3_blocks_all_species_blast.tsv
-
-Summary:
-/Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FBXO3/results/FBXO3_blocks_all_species_summary.tsv
-
-Species with >=2 hits for BOTH blocks:
-  Hipposideros_abae A=2 B=2
-  Hipposideros_armiger A=2 B=2
-  Hipposideros_caffer A=2 B=2
-  Hipposideros_jonesi A=2 B=2
-  Hipposideros_larvatus A=2 B=2
-  Hipposideros_swinhoei A=2 B=2
-  Rhinolophus_affinis A=2 B=2
-  Rhinolophus_ferrumequinum A=2 B=2
-  Rhinolophus_foetidus A=2 B=2
-  Rhinolophus_hipposideros A=2 B=2
-  Rhinolophus_pearsonii A=2 B=2
-  Rhinolophus_perniger_lanosus A=2 B=2
-  Rhinolophus_sinicus A=2 B=2
-  Rhinolophus_trifoliatus A=2 B=2
-  Triaenops_persicus A=2 B=2
-(samtools_env) manuelhoyos@MacBookPro bat_HTF_genomic_analysis %
+  ========================================
+  FBXO3 scaffold-wide BLAST complete
+  ========================================
+  
+  Raw hits:
+  /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FBXO3/results/FBXO3_blocks_all_species_blast.tsv
+  
+  Summary:
+  /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FBXO3/results/FBXO3_blocks_all_species_summary.tsv
+  
+  Species with >=2 hits for BOTH blocks:
+    Hipposideros_abae A=2 B=2
+    Hipposideros_armiger A=2 B=2
+    Hipposideros_caffer A=2 B=2
+    Hipposideros_jonesi A=2 B=2
+    Hipposideros_larvatus A=2 B=2
+    Hipposideros_swinhoei A=2 B=2
+    Rhinolophus_affinis A=2 B=2
+    Rhinolophus_ferrumequinum A=2 B=2
+    Rhinolophus_foetidus A=2 B=2
+    Rhinolophus_hipposideros A=2 B=2
+    Rhinolophus_pearsonii A=2 B=2
+    Rhinolophus_perniger_lanosus A=2 B=2
+    Rhinolophus_sinicus A=2 B=2
+    Rhinolophus_trifoliatus A=2 B=2
+    Triaenops_persicus A=2 B=2
