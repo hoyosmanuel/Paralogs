@@ -2282,3 +2282,199 @@ Results:
 
   chmod +x ANALYSES/FBXO3/scripts/04_search_RhiSin124_after_FBXO3_paralog.py
   python3 ANALYSES/FBXO3/scripts/04_search_RhiSin124_after_FBXO3_paralog.py
+
+
+Results:
+~~~~~~~~
+
+  .. code-block::
+  
+  # ============================================================
+  # Final report
+  # ============================================================
+  
+  print()
+  print("=" * 70)
+  print("FBXO3 / RhiSin-1.24 analysis complete")
+  print("=" * 70)
+  print()
+  print(f"Summary:\n{SUMMARY_OUT}")
+  print()
+  print(f"Raw RhiSin HSPs:\n{RAW_OUT}")
+  print()
+  print(f"10-kb windows:\n{WINDOW_DIR}")
+  print()
+  
+  PY
+  (samtools_env) manuelhoyos@MacBookPro bat_HTF_genomic_analysis % chmod +x ANALYSES/FBXO3/scripts/04_search_RhiSin124_after_FBXO3_paralog.py
+  python3 ANALYSES/FBXO3/scripts/04_search_RhiSin124_after_FBXO3_paralog.py
+  
+  RhiSin-1.24 consensus length: 2113 bp
+  Search window: 10000 bp
+  
+  Species entering RhiSin-1.24 analysis (>=2 A hits and >=2 B hits): 15
+    Hipposideros_abae
+    Hipposideros_armiger
+    Hipposideros_caffer
+    Hipposideros_jonesi
+    Hipposideros_larvatus
+    Hipposideros_swinhoei
+    Rhinolophus_affinis
+    Rhinolophus_ferrumequinum
+    Rhinolophus_foetidus
+    Rhinolophus_hipposideros
+    Rhinolophus_pearsonii
+    Rhinolophus_perniger_lanosus
+    Rhinolophus_sinicus
+    Rhinolophus_trifoliatus
+    Triaenops_persicus
+  
+  [1/15] Hipposideros_abae
+    canonical projection: ENST00000265651.8#FBXO3#11
+    scaffold: HAP1_SUPER_7
+    paralog Block A: 80250060-80250149 -
+    paralog Block B: 80249896-80250059 -
+    3' window: HAP1_SUPER_7:80240060-80250059 (10000 bp)
+    RhiSin-1.24: NO HIT
+  [2/15] Hipposideros_armiger
+    canonical projection: ENST00000265651.8#FBXO3#11
+    scaffold: LG08
+    paralog Block A: 54090249-54090336 +
+    paralog Block B: 54090337-54090500 +
+    3' window: LG08:54090337-54100336 (10000 bp)
+    RhiSin-1.24: NO HIT
+  [3/15] Hipposideros_caffer
+    canonical projection: ENST00000265651.8#FBXO3#12
+    scaffold: HAP1_SUPER_8
+    paralog Block A: 67780569-67780658 +
+    paralog Block B: 67780659-67780822 +
+    3' window: HAP1_SUPER_8:67780659-67790658 (10000 bp)
+    RhiSin-1.24: NO HIT
+  [4/15] Hipposideros_jonesi
+    canonical projection: ENST00000265651.8#FBXO3#11
+    scaffold: HAP1_SUPER_8
+    paralog Block A: 54262238-54262320 -
+    paralog Block B: 54261610-54261772 -
+    3' window: HAP1_SUPER_8:54252238-54262237 (10000 bp)
+    RhiSin-1.24: NO HIT
+  [5/15] Hipposideros_larvatus
+    canonical projection: ENST00000265651.8#FBXO3#10
+    scaffold: manual_scaffold_8
+    paralog Block A: 71059484-71059569 -
+    paralog Block B: 71059324-71059483 -
+    3' window: manual_scaffold_8:71049484-71059483 (10000 bp)
+    RhiSin-1.24: NO HIT
+  [6/15] Hipposideros_swinhoei
+    canonical projection: ENST00000265651.8#FBXO3#11
+    scaffold: LG07
+    paralog Block A: 67575713-67575800 +
+    paralog Block B: 67575801-67575964 +
+    3' window: LG07:67575801-67585800 (10000 bp)
+    RhiSin-1.24: NO HIT
+  [7/15] Rhinolophus_affinis
+    canonical projection: ENST00000265651.8#FBXO3#10
+    scaffold: manual_scaffold_10
+    paralog Block A: 24009684-24009773 +
+    paralog Block B: 24012407-24012570 +
+    3' window: manual_scaffold_10:24009774-24019773 (10000 bp)
+    RhiSin-1.24: NEAR_FULL_LENGTH
+      query coverage: 1953/2113 (92.43%)
+      best HSP: 1953 bp, 94.37% identity, bitscore=3036.0
+      genomic locus: 24013490-24015412 +
+      distance after exon 2: 3716 bp
+  
+  [8/15] Rhinolophus_ferrumequinum
+    canonical projection: ENST00000265651.8#FBXO3#10
+    scaffold: scaffold_m29_p_11
+    paralog Block A: 66437735-66437824 -
+    paralog Block B: 66434946-66435109 -
+    3' window: scaffold_m29_p_11:66427735-66437734 (10000 bp)
+    RhiSin-1.24: NEAR_FULL_LENGTH
+      query coverage: 1980/2113 (93.71%)
+      best HSP: 1956 bp, 94.99% identity, bitscore=3093.0
+      genomic locus: 66432116-66434044 -
+      distance after exon 2: 3690 bp
+  
+  [9/15] Rhinolophus_foetidus
+    canonical projection: ENST00000265651.8#FBXO3#10
+    scaffold: manual_scaffold_3
+    ERROR: canonical TOGA exons not found in query_annotation.gtf.
+  [10/15] Rhinolophus_hipposideros
+    canonical projection: ENST00000265651.8#FBXO3#11
+    scaffold: OZ077427
+    paralog Block A: 23138058-23138147 +
+    paralog Block B: 23140786-23140949 +
+    3' window: OZ077427:23138148-23148147 (10000 bp)
+    RhiSin-1.24: NEAR_FULL_LENGTH
+      query coverage: 1956/2113 (92.57%)
+      best HSP: 1958 bp, 93.51% identity, bitscore=2958.0
+      genomic locus: 23141868-23143798 +
+      distance after exon 2: 3720 bp
+  
+  [11/15] Rhinolophus_pearsonii
+    canonical projection: ENST00000265651.8#FBXO3#10
+    scaffold: LG06
+    paralog Block A: 23305777-23305866 +
+    paralog Block B: 23308274-23308437 +
+    3' window: LG06:23305867-23315866 (10000 bp)
+    RhiSin-1.24: NEAR_FULL_LENGTH
+      query coverage: 1979/2113 (93.66%)
+      best HSP: 1955 bp, 94.37% identity, bitscore=3032.0
+      genomic locus: 23309355-23311282 +
+      distance after exon 2: 3488 bp
+  
+  [12/15] Rhinolophus_perniger_lanosus
+    canonical projection: ENST00000265651.8#FBXO3#10
+    scaffold: manual_scaffold_11
+    ERROR: canonical TOGA exons not found in query_annotation.gtf.
+  [13/15] Rhinolophus_sinicus
+    canonical projection: ENST00000265651.8#FBXO3#11
+    scaffold: LG06
+    paralog Block A: 23096298-23096387 +
+    paralog Block B: 23099038-23099201 +
+    3' window: LG06:23096388-23106387 (10000 bp)
+    RhiSin-1.24: NEAR_FULL_LENGTH
+      query coverage: 1979/2113 (93.66%)
+      best HSP: 1955 bp, 94.37% identity, bitscore=3039.0
+      genomic locus: 23100112-23102027 +
+      distance after exon 2: 3724 bp
+  
+  [14/15] Rhinolophus_trifoliatus
+    canonical projection: ENST00000265651.8#FBXO3#12
+    scaffold: manual_scaffold_11
+    paralog Block A: 169436228-169436317 -
+    paralog Block B: 169432523-169432684 -
+    3' window: manual_scaffold_11:169426228-169436227 (10000 bp)
+    RhiSin-1.24: NEAR_FULL_LENGTH
+      query coverage: 1955/2113 (92.52%)
+      best HSP: 1959 bp, 93.72% identity, bitscore=2981.0
+      genomic locus: 169429688-169431608 -
+      distance after exon 2: 4619 bp
+  
+  [15/15] Triaenops_persicus
+    canonical projection: ENST00000265651.8#FBXO3#10
+    scaffold: manual_scaffold_3
+    paralog Block A: 22905735-22905824 +
+    paralog Block B: 22908432-22908595 +
+    3' window: manual_scaffold_3:22905825-22915824 (10000 bp)
+    RhiSin-1.24: PARTIAL
+      query coverage: 746/2113 (35.31%)
+      best HSP: 475 bp, 94.74% identity, bitscore=745.0
+      genomic locus: 22909641-22910364 +
+      distance after exon 2: 3816 bp
+  
+  
+  ======================================================================
+  FBXO3 / RhiSin-1.24 analysis complete
+  ======================================================================
+  
+  Summary:
+  /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FBXO3/results/FBXO3_RhiSin124_10kb_summary.tsv
+  
+  Raw RhiSin HSPs:
+  /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FBXO3/results/FBXO3_RhiSin124_10kb_blast.tsv
+  
+  10-kb windows:
+  /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FBXO3/sequences/RhiSin124_10kb_windows
+  
+
