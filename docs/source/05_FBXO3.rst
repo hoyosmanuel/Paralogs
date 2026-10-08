@@ -2287,7 +2287,7 @@ Results:
 Results:
 ~~~~~~~~
 
-  .. code-block::
+.. code-block::
   
   # ============================================================
   # Final report
@@ -2478,3 +2478,42 @@ Results:
   /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/FBXO3/sequences/RhiSin124_10kb_windows
   
 
+
+4) Crear un FASTA de los terminales para enviar a CENSOR
+---------------------------------------------------------
+
+.. code-block:: bash
+
+  python3 - <<'PY'
+  from pathlib import Path
+  
+  indir = Path("ANALYSES/FBXO3/sequences/RhiSin124_10kb_windows")
+  outfile = Path("ANALYSES/FBXO3/sequences/FBXO3_paralog_10kb_for_CENSOR.fa")
+  
+  files = sorted(indir.glob("*_after_FBXO3_exon2_10kb.fa"))
+  
+  with outfile.open("w") as out:
+      for f in files:
+          species = f.name.replace("_after_FBXO3_exon2_10kb.fa", "")
+  
+          lines = f.read_text().splitlines()
+          seq = "".join(
+              line.strip()
+              for line in lines
+              if line and not line.startswith(">")
+          )
+  
+          out.write(
+              f">{species}|FBXO3_paralog|10kb_after_block_A\n"
+          )
+  
+          for i in range(0, len(seq), 60):
+              out.write(seq[i:i+60] + "\n")
+  
+  print(f"Wrote: {outfile}")
+  print(f"Sequences: {len(files)}")
+  PY
+
+.. code-block:: bash
+
+  grep '^>' ANALYSES/FBXO3/sequences/FBXO3_paralog_10kb_for_CENSOR.fa
