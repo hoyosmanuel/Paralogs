@@ -1226,3 +1226,1059 @@ Results:
     Rhinolophus_sinicus A=2 B=2
     Rhinolophus_trifoliatus A=2 B=2
     Triaenops_persicus A=2 B=2
+
+
+
+
+3) Check if RhiSin-1.24 is adjacent to the 3' end in the next 3 kb after the last exon of the paralog
+----------------------------------------------------------------------------------------------------
+
+.. code-block:: bash
+
+  cat > ANALYSES/FBXO3/scripts/04_search_RhiSin124_after_FBXO3_paralog.py <<'PY'
+  #!/usr/bin/env python3
+  
+  from pathlib import Path
+  from collections import defaultdict
+  import csv
+  import shutil
+  import subprocess
+  import sys
+  
+  
+  # ============================================================
+  # Configuration
+  # ============================================================
+  
+  ROOT = Path.cwd()
+  
+  RAW_BLAST = (
+      ROOT
+      / "ANALYSES"
+      / "FBXO3"
+      / "results"
+      / "FBXO3_blocks_all_species_blast.tsv"
+  )
+  
+  TOGA_HITS = (
+      ROOT
+      / "ANALYSES"
+      / "FBXO3"
+      / "intermediate"
+      / "FBXO3_all_hits.tsv"
+  )
+  
+  RHISIN = (
+      ROOT
+      / "ANALYSES"
+      / "FBXO3"
+      / "sequences"
+      / "RhiSin-1.24.fa"
+  )
+  
+  SPECIES_DIR = ROOT / "SPECIES"
+  
+  WINDOW_DIR = (
+      ROOT
+      / "ANALYSES"
+      / "FBXO3"
+      / "sequences"
+      / "RhiSin124_10kb_windows"
+  )
+  
+  RESULTS_DIR = (
+      ROOT
+      / "ANALYSES"
+      / "FBXO3"
+      / "results"
+  )
+  
+  SUMMARY_OUT = RESULTS_DIR / "FBXO3_RhiSin124_10kb_summary.tsv"
+  RAW_OUT = RESULTS_DIR / "FBXO3_RhiSin124_10kb_blast.tsv"
+  
+  WINDOW_BP = 10000
+  
+  # HSPs belonging to the same TE copy can be fragmented.
+  # Merge nearby HSPs around the strongest hit.
+  TE_CLUSTER_MAX_GAP = 1000
+  
+  
+  # ============================================================
+  # Basic checks
+  # ============================================================
+  
+  for program in ["samtools", "blastn"]:
+      if shutil.which(program) is None:
+          sys.exit(
+              f"ERROR: {program} was not found in the current environment."
+          )
+  
+  for path in [RAW_BLAST, TOGA_HITS, RHISIN, SPECIES_DIR]:
+      if not path.exists():
+          sys.exit(f"ERROR: required input not found:\n{path}")
+  
+  WINDOW_DIR.mkdir(parents=True, exist_ok=True)
+  RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+  
+  
+  # ============================================================
+  # Utility functions
+  # ============================================================
+  
+  def read_tsv(path):
+      with path.open() as handle:
+          return list(csv.DictReader(handle, delimiter="\t"))
+  
+  
+  def fasta_length(path):
+      n = 0
+      with path.open() as handle:
+          for line in handle:
+              if not line.startswith(">"):
+                  n += len(line.strip())
+      return n
+  
+  
+  def hit_interval(row):
+      a = int(row["Subject_start"])
+      b = int(row["Subject_end"])
+      return min(a, b), max(a, b)
+  
+  
+  def hit_strand(row):
+      return "+" if int(row["Subject_start"]) < int(row["Subject_end"]) else "-"
+  
+  
+  def overlaps(a1, a2, b1, b2):
+      return a1 <= b2 and b1 <= a2
+  
+  
+  def find_genome_fasta(species):
+      d = SPECIES_DIR / species
+  
+      if not d.exists():
+          return None
+  
+      candidates = []
+  
+      for pattern in ["*.fa", "*.fasta", "*.fna"]:
+          candidates.extend(d.glob(pattern))
+  
+      candidates = [
+          p for p in candidates
+          if p.is_file()
+          and not p.name.endswith(".fai")
+      ]
+  
+      if not candidates:
+          return None
+  
+      # Genome assembly should be by far the largest top-level FASTA.
+      return max(candidates, key=lambda p: p.stat().st_size)
+  
+  
+  def ensure_fai(genome):
+      fai = Path(str(genome) + ".fai")
+  
+      if not fai.exists():
+          print(f"  Indexing genome: {genome.name}")
+  
+          subprocess.run(
+              ["samtools", "faidx", str(genome)],
+              check=True
+          )
+  
+      return fai
+  
+  
+  def scaffold_length(fai, scaffold):
+      with fai.open() as handle:
+          for line in handle:
+              fields = line.rstrip("\n").split("\t")
+  
+              if fields[0] == scaffold:
+                  return int(fields[1])
+  
+      raise RuntimeError(
+          f"Scaffold {scaffold} was not found in {fai}"
+      )
+  
+  
+  def find_query_annotation_gtfs(species):
+      species_dir = SPECIES_DIR / species
+  
+      if not species_dir.exists():
+          return []
+  
+      return sorted(species_dir.rglob("query_annotation.gtf"))
+  
+  
+  def canonical_exons_from_toga(species, scaffold, projection):
+      """
+      Find exon coordinates belonging specifically to the unique
+      11-block canonical FBXO3 TOGA projection.
+  
+      GTF coordinates are 1-based inclusive.
+      """
+  
+      gtfs = find_query_annotation_gtfs(species)
+  
+      exon_set = set()
+  
+      for gtf in gtfs:
+          with gtf.open(errors="replace") as handle:
+  
+              for line in handle:
+  
+                  if not line or line.startswith("#"):
+                      continue
+  
+                  fields = line.rstrip("\n").split("\t")
+  
+                  if len(fields) < 9:
+                      continue
+  
+                  if fields[0] != scaffold:
+                      continue
+  
+                  if fields[2] != "exon":
+                      continue
+  
+                  if projection not in fields[8]:
+                      continue
+  
+                  start = int(fields[3])
+                  end = int(fields[4])
+  
+                  exon_set.add((start, end))
+  
+      return sorted(exon_set)
+  
+  
+  def overlaps_any_exon(hit, exons):
+      h1, h2 = hit_interval(hit)
+  
+      for e1, e2 in exons:
+          if overlaps(h1, h2, e1, e2):
+              return True
+  
+      return False
+  
+  
+  def extract_region(genome, scaffold, start, end, outfile):
+      region = f"{scaffold}:{start}-{end}"
+  
+      result = subprocess.run(
+          ["samtools", "faidx", str(genome), region],
+          check=True,
+          capture_output=True,
+          text=True
+      )
+  
+      outfile.write_text(result.stdout)
+  
+  
+  def run_blast(query, subject):
+      outfmt = (
+          "6 qseqid sseqid pident length "
+          "qstart qend sstart send evalue bitscore qlen"
+      )
+  
+      result = subprocess.run(
+          [
+              "blastn",
+              "-query", str(query),
+              "-subject", str(subject),
+              "-task", "blastn",
+              "-word_size", "7",
+              "-dust", "no",
+              "-evalue", "1e-5",
+              "-outfmt", outfmt
+          ],
+          check=True,
+          capture_output=True,
+          text=True
+      )
+  
+      hits = []
+  
+      for line in result.stdout.splitlines():
+  
+          if not line.strip():
+              continue
+  
+          fields = line.split("\t")
+  
+          hits.append({
+              "qseqid": fields[0],
+              "sseqid": fields[1],
+              "pident": float(fields[2]),
+              "length": int(fields[3]),
+              "qstart": int(fields[4]),
+              "qend": int(fields[5]),
+              "sstart": int(fields[6]),
+              "send": int(fields[7]),
+              "evalue": fields[8],
+              "bitscore": float(fields[9]),
+              "qlen": int(fields[10]),
+          })
+  
+      return hits
+  
+  
+  def genomic_interval_from_window(hit, window_start):
+      """
+      BLAST subject coordinates are 1-based within the extracted window.
+      Convert them back to genomic coordinates.
+      """
+  
+      g1 = window_start + hit["sstart"] - 1
+      g2 = window_start + hit["send"] - 1
+  
+      return min(g1, g2), max(g1, g2)
+  
+  
+  def interval_gap(a1, a2, b1, b2):
+      if overlaps(a1, a2, b1, b2):
+          return 0
+  
+      if a2 < b1:
+          return b1 - a2 - 1
+  
+      return a1 - b2 - 1
+  
+  
+  def choose_te_cluster(hits, window_start):
+      """
+      Start from the highest-bitscore HSP and iteratively include
+      other HSPs that lie within TE_CLUSTER_MAX_GAP bp of the
+      growing genomic cluster.
+  
+      This prevents unrelated short matches elsewhere in the
+      10-kb window from inflating query coverage.
+      """
+  
+      if not hits:
+          return []
+  
+      ordered = sorted(
+          hits,
+          key=lambda h: h["bitscore"],
+          reverse=True
+      )
+  
+      best = ordered[0]
+  
+      c1, c2 = genomic_interval_from_window(
+          best,
+          window_start
+      )
+  
+      cluster = [best]
+  
+      changed = True
+  
+      while changed:
+  
+          changed = False
+  
+          for hit in ordered[1:]:
+  
+              if hit in cluster:
+                  continue
+  
+              h1, h2 = genomic_interval_from_window(
+                  hit,
+                  window_start
+              )
+  
+              gap = interval_gap(c1, c2, h1, h2)
+  
+              if gap <= TE_CLUSTER_MAX_GAP:
+  
+                  cluster.append(hit)
+  
+                  c1 = min(c1, h1)
+                  c2 = max(c2, h2)
+  
+                  changed = True
+  
+      return cluster
+  
+  
+  def query_union_coverage(hits, qlen):
+      if not hits:
+          return 0, 0.0
+  
+      covered = set()
+  
+      for hit in hits:
+          q1 = min(hit["qstart"], hit["qend"])
+          q2 = max(hit["qstart"], hit["qend"])
+  
+          covered.update(range(q1, q2 + 1))
+  
+      bp = len(covered)
+      pct = 100.0 * bp / qlen
+  
+      return bp, pct
+  
+  
+  def classify_te(coverage_pct):
+      if coverage_pct >= 80:
+          return "NEAR_FULL_LENGTH"
+  
+      if coverage_pct >= 20:
+          return "PARTIAL"
+  
+      if coverage_pct > 0:
+          return "FRAGMENTARY"
+  
+      return "NO_HIT"
+  
+  
+  # ============================================================
+  # Read inputs
+  # ============================================================
+  
+  raw_rows = read_tsv(RAW_BLAST)
+  toga_rows = read_tsv(TOGA_HITS)
+  
+  rhi_len = fasta_length(RHISIN)
+  
+  print()
+  print(f"RhiSin-1.24 consensus length: {rhi_len} bp")
+  print(f"Search window: {WINDOW_BP} bp")
+  print()
+  
+  
+  # ============================================================
+  # Unique canonical FBXO3 projection for each species
+  # ============================================================
+  
+  canonical_by_species = {}
+  
+  toga_by_species = defaultdict(list)
+  
+  for row in toga_rows:
+      toga_by_species[row["Species"]].append(row)
+  
+  for species, rows in toga_by_species.items():
+  
+      canon = [
+          r for r in rows
+          if int(r["Blocks"]) == 11
+      ]
+  
+      if len(canon) == 1:
+          canonical_by_species[species] = canon[0]
+  
+  
+  # ============================================================
+  # Group Step-3 BLAST hits
+  # ============================================================
+  
+  blast_by_species = defaultdict(list)
+  
+  for row in raw_rows:
+      blast_by_species[row["Species"]].append(row)
+  
+  
+  # ============================================================
+  # Select species with duplicated A + B signal
+  # ============================================================
+  
+  selected_species = []
+  
+  for species, rows in blast_by_species.items():
+  
+      A = [
+          r for r in rows
+          if r["Query"] == "FBXO3_block_A"
+      ]
+  
+      B = [
+          r for r in rows
+          if r["Query"] == "FBXO3_block_B"
+      ]
+  
+      if len(A) >= 2 and len(B) >= 2:
+          selected_species.append(species)
+  
+  selected_species = sorted(selected_species)
+  
+  print(
+      "Species entering RhiSin-1.24 analysis "
+      f"(>=2 A hits and >=2 B hits): {len(selected_species)}"
+  )
+  
+  for species in selected_species:
+      print(f"  {species}")
+  
+  print()
+  
+  
+  # ============================================================
+  # Output containers
+  # ============================================================
+  
+  summary_rows = []
+  raw_te_rows = []
+  
+  
+  # ============================================================
+  # Main analysis
+  # ============================================================
+  
+  for i, species in enumerate(selected_species, start=1):
+  
+      print(f"[{i}/{len(selected_species)}] {species}")
+  
+      species_hits = blast_by_species[species]
+  
+      A_hits = [
+          r for r in species_hits
+          if r["Query"] == "FBXO3_block_A"
+      ]
+  
+      B_hits = [
+          r for r in species_hits
+          if r["Query"] == "FBXO3_block_B"
+      ]
+  
+      canonical = canonical_by_species.get(species)
+  
+      if canonical is None:
+  
+          print("  ERROR: unique 11-block canonical projection not found.")
+  
+          summary_rows.append({
+              "Species": species,
+              "Status": "ERROR_NO_UNIQUE_CANONICAL"
+          })
+  
+          continue
+  
+      scaffold = canonical["Scaffold"]
+      canonical_projection = canonical["Projection"]
+      canonical_strand = canonical["Strand"]
+  
+      print(f"  canonical projection: {canonical_projection}")
+      print(f"  scaffold: {scaffold}")
+  
+      # --------------------------------------------------------
+      # Recover canonical TOGA exon coordinates
+      # --------------------------------------------------------
+  
+      canonical_exons = canonical_exons_from_toga(
+          species,
+          scaffold,
+          canonical_projection
+      )
+  
+      if not canonical_exons:
+  
+          print("  ERROR: canonical TOGA exons not found in query_annotation.gtf.")
+  
+          summary_rows.append({
+              "Species": species,
+              "Status": "ERROR_CANONICAL_EXONS_NOT_FOUND"
+          })
+  
+          continue
+  
+      # --------------------------------------------------------
+      # Separate canonical and noncanonical A/B copies
+      # --------------------------------------------------------
+  
+      canonical_A = [
+          h for h in A_hits
+          if overlaps_any_exon(h, canonical_exons)
+      ]
+  
+      candidate_A = [
+          h for h in A_hits
+          if not overlaps_any_exon(h, canonical_exons)
+      ]
+  
+      canonical_B = [
+          h for h in B_hits
+          if overlaps_any_exon(h, canonical_exons)
+      ]
+  
+      candidate_B = [
+          h for h in B_hits
+          if not overlaps_any_exon(h, canonical_exons)
+      ]
+  
+      if len(canonical_A) < 1 or len(candidate_A) < 1:
+  
+          print(
+              "  ERROR: could not cleanly separate "
+              "canonical and paralog Block A."
+          )
+  
+          summary_rows.append({
+              "Species": species,
+              "Status": "ERROR_A_CLASSIFICATION"
+          })
+  
+          continue
+  
+      if len(canonical_B) < 1 or len(candidate_B) < 1:
+  
+          print(
+              "  ERROR: could not cleanly separate "
+              "canonical and paralog Block B."
+          )
+  
+          summary_rows.append({
+              "Species": species,
+              "Status": "ERROR_B_CLASSIFICATION"
+          })
+  
+          continue
+  
+      # If more than one HSP remains, keep the strongest.
+      paralog_A = max(
+          candidate_A,
+          key=lambda h: float(h["Bitscore"])
+      )
+  
+      paralog_B = max(
+          candidate_B,
+          key=lambda h: float(h["Bitscore"])
+      )
+  
+      A_start, A_end = hit_interval(paralog_A)
+      B_start, B_end = hit_interval(paralog_B)
+  
+      A_strand = hit_strand(paralog_A)
+      B_strand = hit_strand(paralog_B)
+  
+      print(
+          f"  paralog Block A: "
+          f"{A_start}-{A_end} {A_strand}"
+      )
+  
+      print(
+          f"  paralog Block B: "
+          f"{B_start}-{B_end} {B_strand}"
+      )
+  
+      if A_strand != B_strand:
+          print("  WARNING: A and B have different orientations.")
+  
+      paralog_strand = A_strand
+  
+      # --------------------------------------------------------
+      # Find genome
+      # --------------------------------------------------------
+  
+      genome = find_genome_fasta(species)
+  
+      if genome is None:
+  
+          print("  ERROR: genome FASTA not found.")
+  
+          summary_rows.append({
+              "Species": species,
+              "Status": "ERROR_NO_GENOME"
+          })
+  
+          continue
+  
+      fai = ensure_fai(genome)
+  
+      try:
+          chrom_len = scaffold_length(
+              fai,
+              scaffold
+          )
+  
+      except RuntimeError as error:
+  
+          print(f"  ERROR: {error}")
+  
+          summary_rows.append({
+              "Species": species,
+              "Status": "ERROR_SCAFFOLD_NOT_FOUND"
+          })
+  
+          continue
+  
+      # --------------------------------------------------------
+      # Define 10-kb biological 3' window after Block A
+      #
+      # Block A = second FBXO3 exon.
+      # --------------------------------------------------------
+  
+      if paralog_strand == "+":
+  
+          window_start = A_end + 1
+          window_end = min(
+              chrom_len,
+              A_end + WINDOW_BP
+          )
+  
+      else:
+  
+          window_start = max(
+              1,
+              A_start - WINDOW_BP
+          )
+  
+          window_end = A_start - 1
+  
+      if window_start > window_end:
+  
+          print("  ERROR: invalid extraction window.")
+  
+          summary_rows.append({
+              "Species": species,
+              "Status": "ERROR_INVALID_WINDOW"
+          })
+  
+          continue
+  
+      window_file = (
+          WINDOW_DIR
+          / f"{species}_after_FBXO3_exon2_10kb.fa"
+      )
+  
+      extract_region(
+          genome,
+          scaffold,
+          window_start,
+          window_end,
+          window_file
+      )
+  
+      actual_window_length = (
+          window_end - window_start + 1
+      )
+  
+      print(
+          f"  3' window: "
+          f"{scaffold}:{window_start}-{window_end} "
+          f"({actual_window_length} bp)"
+      )
+  
+      # --------------------------------------------------------
+      # BLAST RhiSin-1.24
+      # --------------------------------------------------------
+  
+      te_hits = run_blast(
+          RHISIN,
+          window_file
+      )
+  
+      if not te_hits:
+  
+          print("  RhiSin-1.24: NO HIT")
+  
+          summary_rows.append({
+              "Species": species,
+              "Scaffold": scaffold,
+              "Genome": genome.name,
+              "Canonical_projection": canonical_projection,
+              "Canonical_strand": canonical_strand,
+              "Paralog_strand": paralog_strand,
+              "Paralog_A_start": A_start,
+              "Paralog_A_end": A_end,
+              "Paralog_B_start": B_start,
+              "Paralog_B_end": B_end,
+              "Window_start": window_start,
+              "Window_end": window_end,
+              "Window_length": actual_window_length,
+              "RhiSin_consensus_length": rhi_len,
+              "RhiSin_HSPs_total": 0,
+              "RhiSin_HSPs_cluster": 0,
+              "RhiSin_query_bp_covered": 0,
+              "RhiSin_query_coverage_pct": 0.0,
+              "RhiSin_best_identity": "",
+              "RhiSin_best_alignment_bp": "",
+              "RhiSin_best_bitscore": "",
+              "RhiSin_genomic_start": "",
+              "RhiSin_genomic_end": "",
+              "RhiSin_orientation": "",
+              "Distance_after_exon2_bp": "",
+              "Status": "NO_HIT"
+          })
+  
+          continue
+  
+      # --------------------------------------------------------
+      # Identify principal TE locus
+      # --------------------------------------------------------
+  
+      cluster = choose_te_cluster(
+          te_hits,
+          window_start
+      )
+  
+      best = max(
+          cluster,
+          key=lambda h: h["bitscore"]
+      )
+  
+      qlen = best["qlen"]
+  
+      covered_bp, coverage_pct = (
+          query_union_coverage(
+              cluster,
+              qlen
+          )
+      )
+  
+      genomic_intervals = [
+          genomic_interval_from_window(
+              h,
+              window_start
+          )
+          for h in cluster
+      ]
+  
+      te_genomic_start = min(
+          x[0] for x in genomic_intervals
+      )
+  
+      te_genomic_end = max(
+          x[1] for x in genomic_intervals
+      )
+  
+      te_orientation = (
+          "+"
+          if best["sstart"] < best["send"]
+          else "-"
+      )
+  
+      # Number of intervening bases between exon 2
+      # and the nearest edge of the TE in biological 3'.
+      if paralog_strand == "+":
+  
+          distance_after_exon2 = (
+              te_genomic_start - A_end - 1
+          )
+  
+      else:
+  
+          distance_after_exon2 = (
+              A_start - te_genomic_end - 1
+          )
+  
+      status = classify_te(
+          coverage_pct
+      )
+  
+      print(
+          f"  RhiSin-1.24: {status}"
+      )
+  
+      print(
+          f"    query coverage: "
+          f"{covered_bp}/{qlen} "
+          f"({coverage_pct:.2f}%)"
+      )
+  
+      print(
+          f"    best HSP: "
+          f"{best['length']} bp, "
+          f"{best['pident']:.2f}% identity, "
+          f"bitscore={best['bitscore']:.1f}"
+      )
+  
+      print(
+          f"    genomic locus: "
+          f"{te_genomic_start}-{te_genomic_end} "
+          f"{te_orientation}"
+      )
+  
+      print(
+          f"    distance after exon 2: "
+          f"{distance_after_exon2} bp"
+      )
+  
+      # --------------------------------------------------------
+      # Save raw TE HSPs
+      # --------------------------------------------------------
+  
+      cluster_ids = {id(h) for h in cluster}
+  
+      for hit in te_hits:
+  
+          gstart, gend = (
+              genomic_interval_from_window(
+                  hit,
+                  window_start
+              )
+          )
+  
+          raw_te_rows.append({
+              "Species": species,
+              "Scaffold": scaffold,
+              "Paralog_strand": paralog_strand,
+              "Paralog_A_start": A_start,
+              "Paralog_A_end": A_end,
+              "Window_start": window_start,
+              "Window_end": window_end,
+              "Qseqid": hit["qseqid"],
+              "Percent_identity": hit["pident"],
+              "Alignment_length": hit["length"],
+              "Query_start": hit["qstart"],
+              "Query_end": hit["qend"],
+              "Subject_start": hit["sstart"],
+              "Subject_end": hit["send"],
+              "Genomic_start": gstart,
+              "Genomic_end": gend,
+              "Evalue": hit["evalue"],
+              "Bitscore": hit["bitscore"],
+              "Query_length": hit["qlen"],
+              "Principal_TE_cluster": (
+                  "YES"
+                  if id(hit) in cluster_ids
+                  else "NO"
+              )
+          })
+  
+      # --------------------------------------------------------
+      # Save species summary
+      # --------------------------------------------------------
+  
+      summary_rows.append({
+          "Species": species,
+          "Scaffold": scaffold,
+          "Genome": genome.name,
+          "Canonical_projection": canonical_projection,
+          "Canonical_strand": canonical_strand,
+          "Paralog_strand": paralog_strand,
+          "Paralog_A_start": A_start,
+          "Paralog_A_end": A_end,
+          "Paralog_B_start": B_start,
+          "Paralog_B_end": B_end,
+          "Window_start": window_start,
+          "Window_end": window_end,
+          "Window_length": actual_window_length,
+          "RhiSin_consensus_length": rhi_len,
+          "RhiSin_HSPs_total": len(te_hits),
+          "RhiSin_HSPs_cluster": len(cluster),
+          "RhiSin_query_bp_covered": covered_bp,
+          "RhiSin_query_coverage_pct": f"{coverage_pct:.3f}",
+          "RhiSin_best_identity": f"{best['pident']:.3f}",
+          "RhiSin_best_alignment_bp": best["length"],
+          "RhiSin_best_bitscore": f"{best['bitscore']:.1f}",
+          "RhiSin_genomic_start": te_genomic_start,
+          "RhiSin_genomic_end": te_genomic_end,
+          "RhiSin_orientation": te_orientation,
+          "Distance_after_exon2_bp": distance_after_exon2,
+          "Status": status
+      })
+  
+      print()
+  
+  
+  # ============================================================
+  # Write results
+  # ============================================================
+  
+  summary_fields = [
+      "Species",
+      "Scaffold",
+      "Genome",
+      "Canonical_projection",
+      "Canonical_strand",
+      "Paralog_strand",
+      "Paralog_A_start",
+      "Paralog_A_end",
+      "Paralog_B_start",
+      "Paralog_B_end",
+      "Window_start",
+      "Window_end",
+      "Window_length",
+      "RhiSin_consensus_length",
+      "RhiSin_HSPs_total",
+      "RhiSin_HSPs_cluster",
+      "RhiSin_query_bp_covered",
+      "RhiSin_query_coverage_pct",
+      "RhiSin_best_identity",
+      "RhiSin_best_alignment_bp",
+      "RhiSin_best_bitscore",
+      "RhiSin_genomic_start",
+      "RhiSin_genomic_end",
+      "RhiSin_orientation",
+      "Distance_after_exon2_bp",
+      "Status"
+  ]
+  
+  with SUMMARY_OUT.open("w", newline="") as handle:
+  
+      writer = csv.DictWriter(
+          handle,
+          fieldnames=summary_fields,
+          delimiter="\t",
+          extrasaction="ignore"
+      )
+  
+      writer.writeheader()
+  
+      for row in summary_rows:
+          writer.writerow(row)
+  
+  
+  raw_fields = [
+      "Species",
+      "Scaffold",
+      "Paralog_strand",
+      "Paralog_A_start",
+      "Paralog_A_end",
+      "Window_start",
+      "Window_end",
+      "Qseqid",
+      "Percent_identity",
+      "Alignment_length",
+      "Query_start",
+      "Query_end",
+      "Subject_start",
+      "Subject_end",
+      "Genomic_start",
+      "Genomic_end",
+      "Evalue",
+      "Bitscore",
+      "Query_length",
+      "Principal_TE_cluster"
+  ]
+  
+  with RAW_OUT.open("w", newline="") as handle:
+  
+      writer = csv.DictWriter(
+          handle,
+          fieldnames=raw_fields,
+          delimiter="\t"
+      )
+  
+      writer.writeheader()
+      writer.writerows(raw_te_rows)
+  
+  
+  # ============================================================
+  # Final report
+  # ============================================================
+  
+  print()
+  print("=" * 70)
+  print("FBXO3 / RhiSin-1.24 analysis complete")
+  print("=" * 70)
+  print()
+  print(f"Summary:\n{SUMMARY_OUT}")
+  print()
+  print(f"Raw RhiSin HSPs:\n{RAW_OUT}")
+  print()
+  print(f"10-kb windows:\n{WINDOW_DIR}")
+  print()
+  
+  PY
+
+.. code-block:: bash
+
+  chmod +x ANALYSES/FBXO3/scripts/04_search_RhiSin124_after_FBXO3_paralog.py
+  python3 ANALYSES/FBXO3/scripts/04_search_RhiSin124_after_FBXO3_paralog.py
