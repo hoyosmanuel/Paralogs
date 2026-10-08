@@ -2517,3 +2517,20 @@ Results:
 .. code-block:: bash
 
   grep '^>' ANALYSES/FBXO3/sequences/FBXO3_paralog_10kb_for_CENSOR.fa
+
+
+Simplify the header:
+~~~~~~~~~~~~~~~~~~~~
+
+  awk '
+  /^>/ {
+      sub(/^>/,"")
+      split($0,a,"|")
+      gsub(/_/,"",a[1])
+      print ">" a[1]
+      next
+  }
+  {print}
+  ' \
+  ANALYSES/FBXO3/sequences/FBXO3_paralog_10kb_for_CENSOR.fa \
+  > ANALYSES/FBXO3/sequences/FBXO3_paralog_10kb_CENSOR_simpleheaders.fa
