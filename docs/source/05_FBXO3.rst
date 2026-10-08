@@ -2522,6 +2522,8 @@ Results:
 Simplify the header:
 ~~~~~~~~~~~~~~~~~~~~
 
+.. code-block:: bash
+
   awk '
   /^>/ {
       sub(/^>/,"")
