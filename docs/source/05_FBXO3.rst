@@ -2536,3 +2536,17 @@ Simplify the header:
   ' \
   ANALYSES/FBXO3/sequences/FBXO3_paralog_10kb_for_CENSOR.fa \
   > ANALYSES/FBXO3/sequences/FBXO3_paralog_10kb_CENSOR_simpleheaders.fa
+
+
+
+5) Understand this thing
+------------------------
+
+This is the panorama in Hipposideros
+====================================
+
+.. image:: _static/Hipposideros-FBXO3.png
+   :alt: Descripción de la imagen
+   :width: 6000px
+   :align: center
+
