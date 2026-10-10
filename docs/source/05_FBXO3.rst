@@ -2574,3 +2574,22 @@ This is the panorama in Rhinolophus
 
 
 
+
+6) Calculate Times of Insertion
+--------------------------------
+
+So, we have that these species are the ones with the appropriate TE insertion and the appropriate duplication. According to Morales et al. (2026), the Rhinolophus node is 21.61 million years old. Now we are going to calculate the insertion age of RhiSin-1.24 at those particular coordinates.
+
+| Rhinolophus sedulus
+| Rhinolophus luctus
+| Rhinolophus trifoliatus
+| Rhinolophus pearsonii
+| Rhinolophus sinicus
+| Rhinolophus affinis
+| Rhinolophus hipposideros
+| Rhinolophus ferrumequinum
+
+
+
+
+
