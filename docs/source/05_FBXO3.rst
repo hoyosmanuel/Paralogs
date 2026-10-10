@@ -2543,10 +2543,31 @@ Simplify the header:
 ------------------------
 
 This is the panorama in Hipposideros
-====================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. image:: _static/Hipposideros-FBXO3.png
    :alt: Descripción de la imagen
-   :width: 6000px
+   :width: 2000px
    :align: center
 
+This is the panorama in Triaenops
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. image:: _static/Triaenops_persicus-FBXO3.png
+   :alt: Descripción de la imagen
+   :width: 2000px
+   :align: center
+
+
+This is the panorama in Rhinolophus
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. image:: _static/R.ferromiquinum_FBXO3.png
+   :alt: Descripción de la imagen
+   :width: 2000px
+   :align: center
+
+.. image:: _static/R.trifoliatus_FBXO3.png
+   :alt: Descripción de la imagen
+   :width: 2000px
+   :align: center
