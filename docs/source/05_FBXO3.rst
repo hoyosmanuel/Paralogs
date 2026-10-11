@@ -2581,7 +2581,9 @@ This is the panorama in Rhinolophus
 So, we have that these species are the ones with the appropriate TE insertion and the appropriate duplication. According to Morales et al. (2026), the Rhinolophus node is 21.61 million years old. Now we are going to calculate the insertion age of RhiSin-1.24 at those particular coordinates.
 
 .. code-block::
-  
+
+  species  chrom  chromStart  chromEnd TE  BED_score strand  SW_score  perc_div  insertion_age_Ma  perc_del  perc_ins  repeat_class_family  repeat_position_1  repeat_position_2  repeat_position_3  ID  overlap_flag
+  R_affinis  manual_scaffold_10	24013485	24015412	RhiSin-1.24	0	+	16319	4.2	18.075281	1.6	0.0	DNA/TcMar-Tc2	1	1957	(160)	1510072	
   R_sedulus
   R_luctus
   R_trifoliatus
@@ -2590,6 +2592,7 @@ So, we have that these species are the ones with the appropriate TE insertion an
   R_affinis
   R_hipposideros
   R_ferrumequinum  15506   3.7  1.4  0.0  scaffold_m29_p_11 66432116 66434046 (24013083) C  RhiSin-1.24    DNA/TcMar-Tc2        (159) 1958      1 1780396
+
   
   
 
