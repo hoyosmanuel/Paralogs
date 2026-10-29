@@ -63,3 +63,67 @@ The expected output is
   >ZKSCAN7_exon4_match
   >ZKSCAN7_exon5_match
 
+
+2) Create the RhiSin-1.24 TE-derived exon probe
+-----------------------------------------------
+
+Exon 6 corresponds to sequence derived from the transposable element
+RhiSin-1.24. Because this sequence is TE-derived, it is analyzed
+separately from the host-derived ZKSCAN7 exons.
+
+From the ZKSCAN7 analysis directory
+
+.. code-block:: bash
+
+    cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/ZKSCAN7
+
+Create the TE-derived probe FASTA
+
+.. code-block:: bash
+
+    nano sequences/ZKSCAN7_RhiSin-1.24_probe.fa
+
+Add the following sequence
+
+.. code-block:: bash
+
+    >RhiSin-1.24_match
+    acaagatgagtgcaaaaagaaagagctattccgtcgagtacaagaaaggaatcgtggaggactctcggggcaagaatcttacggctttctgcaaagagaagaagttggatctccgaatggtccgaaaatggcgagccgagtacgataacctcagtcaacaggtagacgaaggaaatgctaagaagcgcaagtgtggatcaggtcggcaaccattgtttcttgagctggaagacatcatctgtgagtagattgctgaaaggagagcaaagcctttggttgtgcacagggctgatattcaagcatttgtccttgcaatggcaccacagttagaaatatcccccgaaaaattcaaagcatcacaacactggctggatggcttccttccacaatatgaactgtctctaagaagatctaccacactgttctagctggaagatactgaagttattaaacatgcacttgcattcaagtccttcgttgatggcctcgatttttctaaatgccaactccaacatgattgctatgtatgaaactacagtgtttatgggccaaggatctcaaatgacaattgattagaggggtgcctcgtcaatctgctacattccctccactggttacgaaagtgcacgtgttatctgtattttggcaattcatctggttggaaagagagccccacctctaatcatcactaagggcaagaaagataaggttgaatgtgtttcaggcatttatgttcttgaaaccgaaaaagcctgctgcacacaagcagttaataaggaagtgggtcaatttaatgctgccacttgttttgcgaggtggccagagaggtctgctagtcttggattcagccagcactcactgcgctaaagacatgaagaactcccttgcagagaaaagaatagatcaaataatgattccctcaggaatgattgcctatctccagactcttgatactgcaataagcaagccattcaaggaacatttgctcatggatatccatgactacattgaaaatagaatggagagaaatcagtgtggaaactttgtgaagcctaatctgtaagaggttatgacttgggtgaagaattcatgagataaaaatcactgacagctgtgttgccaatgcactacgagcaggctacatggacaagaagtgctcatttcaggagagctccgttgctggacatgagaggttggggccaatgattttacaggaaatggagtccaaagaaattcaagccggaattcgtagtttgcagagttatgacaatgttccagaagaggatgacatgactatTTGAATAAATGTAGAATTTTGTACATGAATAAATGAATAAATGTAGATTGTtgtacatgaataaatgtagattgttgtacgtg
+
+Remove accidental whitespace from the sequence
+
+.. code-block:: bash
+
+    sed -i '' '/^>/! s/[[:space:]]//g' \
+    sequences/ZKSCAN7_RhiSin-1.24_probe.fa
+
+Confirm the FASTA header
+
+.. code-block:: bash
+
+    head -1 sequences/ZKSCAN7_RhiSin-1.24_probe.fa
+
+The expected output is
+
+.. code-block:: bash
+
+    >RhiSin-1.24_match
+
+Finally, verify the probe length
+
+.. code-block:: bash
+
+    awk '
+    /^>/ {
+        if (name) print name, length(seq)
+        name=$0
+        seq=""
+        next
+    }
+    {
+        seq=seq $0
+    }
+    END {
+        print name, length(seq)
+    }
+    ' sequences/ZKSCAN7_RhiSin-1.24_probe.fa
