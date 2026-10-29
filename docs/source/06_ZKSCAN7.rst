@@ -13,25 +13,22 @@ exon 6 is analyzed separately as an RhiSin-1.24 probe.
 1. Create the ZKSCAN7 host exon probes
 ---------------------------------------
 
-Create an independent working directory for the ZKSCAN7 analysis::
+Create an independent working directory for the ZKSCAN7 analysis
 
-.. code-block:: bash
+.. code-block::
 
   cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
-
   mkdir -p ANALYSES/ZKSCAN7/{intermediate,results,scripts,sequences}
-
   cd ANALYSES/ZKSCAN7
+  
 
-
-
-Create the host-exon FASTA::
+Create the host-exon FASTA
 
 .. code-block:: bash
 
   nano sequences/ZKSCAN7_host_exon_probes.fa
 
-Add the following sequences::
+Add the following sequences
 
 .. code-block:: bash
 
@@ -50,13 +47,13 @@ Add the following sequences::
   >ZKSCAN7_exon5_match
   GGCTCTGCAGCATATGGGTTCCCGTCTGTGGACTGTACTGAGAAGAAGGGCAGAGGTCTAGCACGGAGTCGGAGAGGCCTGAACCGGAACATCAGGCCGGAAACGTACCGCAGCATGGCCTCGTTGG
 
-Save the file and confirm that all five host probes are present::
+Save the file and confirm that all five host probes are present
 
 .. code-block:: bash
 
   grep '^>' sequences/ZKSCAN7_host_exon_probes.fa
 
-The expected output is::
+The expected output is
 
 .. code-block:: bash
 
