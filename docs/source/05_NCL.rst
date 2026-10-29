@@ -99,4 +99,46 @@ eliminar saltos:
   -dbtype nucl \
   -out intermediate/blast_db/Myotis_myotis
 
+.. code-block:: bash
 
+    blastn \
+    -query sequences/NCL_host_exon_probes.fa \
+    -db intermediate/blast_db/Myotis_myotis \
+    -task blastn \
+    -word_size 7 \
+    -dust no \
+    -evalue 1e-10 \
+    -outfmt '6 qseqid sseqid pident length qlen qstart qend sstart send evalue bitscore qcovhsp' \
+    > intermediate/NCL_exon_matches_Myotis_myotis.tsv
+
+.. code-block:: bash
+
+    blastn \
+    -query sequences/NCL_Charlie8_probe.fa \
+    -db intermediate/blast_db/Myotis_myotis \
+    -task blastn \
+    -word_size 7 \
+    -dust no \
+    -evalue 1e-20 \
+    -outfmt '6 qseqid sseqid pident length qlen qstart qend sstart send evalue bitscore qcovhsp' \
+    > intermediate/NCL_Charlie8_matches_Myotis_myotis.tsv
+
+.. code-block:: bash
+
+    cat \
+    intermediate/NCL_exon_matches_Myotis_myotis.tsv \
+    intermediate/NCL_Charlie8_matches_Myotis_myotis.tsv \
+    > intermediate/NCL_all_matches_Myotis_myotis.tsv
+
+.. code-block:: bash
+
+    awk 'BEGIN{OFS="\t"}
+    {
+        pos = ($8 < $9 ? $8 : $9)
+        print $0, pos
+    }' intermediate/NCL_all_matches_Myotis_myotis.tsv \
+    | sort -k2,2 -k13,13n \
+    | cut -f1-12 \
+    | column -t
+    
+    
