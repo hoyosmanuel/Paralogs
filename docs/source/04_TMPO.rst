@@ -1490,3 +1490,64 @@ luego hacemos esto para ver qué coincide con los TEs en la secuencia:
 	        touch "results/batch_logs/${species}.failed"
 	    fi
 	' sh
+
+
+Generemos un documento:
+
+.. code-block:: bash
+
+	echo "TSV generated:"
+	find results -maxdepth 1 -name 'TMPO_signature_*.tsv' | wc -l
+	
+	echo "Failed species:"
+	find results/batch_logs -name '*.failed' | wc -l
+	
+	echo "Failed names:"
+	find results/batch_logs -name '*.failed' -exec basename {} .failed \;
+
+
+
+
+3) Resultados:
+-------------------------------------------
+
+.. code-block:: bash
+
+	grep -h -v '^Species' results/TMPO_signature_*.tsv \
+	| awk -F'\t' '{count[$NF]++} END {for (x in count) print x, count[x]}'
+
+Identifcar las positivas:
+
+.. code-block:: bash
+
+	grep -h 'TMPO_PARALOG_SIGNATURE_FOUND' \
+	results/TMPO_signature_*.tsv \
+	| cut -f1-6
+
+
+.. code-block:: bash
+
+	(base) manuelhoyos@manuel TMPO % grep -h -v '^Species' results/TMPO_signature_*.tsv \
+	| awk -F'\t' '{count[$NF]++} END {for (x in count) print x, count[x]}'
+	 98O_LIKE_LOCUS_NO_3PRIME_TE
+	 15O_PARALOG_SIGNATURE_FOUND
+	(base) manuelhoyos@manuel TMPO % grep -h 'TMPO_PARALOG_SIGNATURE_FOUND' \
+	results/TMPO_signature_*.tsv \
+	| cut -f1-6
+	Myotis_auriculus	mMyoAur1.1.pri.fa	SUPER__22	6541114	6552997	+
+	Myotis_californicus	mMyoCal1.2.pri.fa	SUPER__22	6253904	6264499	+
+	Myotis_daubentonii	mMyoDau2.1.pri.fa	NC_081859	11859775	11871278	-
+	Myotis_evotis	mMyoEvo1.2.pri.fa	SUPER__22	11742535	11753529	-
+	Myotis_lucifugus	mMyoLuc2.1.pri.fa	SUPER__22	6072092	6082862	+
+	Myotis_myotis	mMyoMyo1.6.pri.fa	scaffold_m19_p_21	11543234	11553690	-
+	Myotis_mystacinus	mMyoMys1.1.hap1.fa	OZ065572	6337773	6351730	+
+	Myotis_nigricans	mMyoNig1.1.pri.fa	manual_scaffold_21	5415907	5426788	+
+	Myotis_occultus	mMyoOcc1.1.pri.fa	SUPER__21	7575053	7585395	+
+	Myotis_pilosus	mMyoPil1.2.pri.fa	LG21	6036664	6045937	+
+	Myotis_thysanodes	mMyoThy1.2.pri.fa	SUPER__22	7519122	7530375	+
+	Myotis_velifer	mMyoVel1.1.pri.fa	SUPER__22	11603049	11614185	-
+	Myotis_vivesi	mMyoViv1.2.pri.fa	SUPER_20	11833187	11847488	-
+	Myotis_volans	mMyoVol1.2.pri.fa	SUPER__22	11802255	11810690	-
+	Myotis_yumanensis	mMyoYum1.1.hap1.fa	JAPQVU010000023	11610152	11618239	-
+	(base) manuelhoyos@manuel TMPO %
+	
