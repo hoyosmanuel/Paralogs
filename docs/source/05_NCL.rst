@@ -140,5 +140,11 @@ eliminar saltos:
     | sort -k2,2 -k13,13n \
     | cut -f1-12 \
     | column -t
-    
+
+
+4) Automate detection of candidate NCL-Charlie8 loci for all species
+--------------------------------------------------------------------
+
+cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/NCL
+
     
