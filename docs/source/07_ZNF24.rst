@@ -1,1 +1,188 @@
+I. IDENTIFY THE ZNF24–nTum-6.4314 GENOMIC ARCHITECTURE
+======================================================
 
+The ZNF24 chimeric architecture was identified in
+*Myotis daubentonii*.
+
+Two transcript configurations are associated with this locus.
+
+The five-exon transcript contains four host-derived ZNF24 exons followed
+by a terminal exon derived from the transposable element nTum-6.4314::
+
+    ZNF24 exon 1
+        |
+    ZNF24 exon 2
+        |
+    ZNF24 exon 3
+        |
+    ZNF24 exon 4
+        |
+    nTum-6.4314-derived exon
+
+A second transcript contains the same ZNF24 exons 1–3 and the same
+nTum-6.4314-derived terminal exon but lacks ZNF24 exon 4::
+
+    ZNF24 exon 1
+        |
+    ZNF24 exon 2
+        |
+    ZNF24 exon 3
+        |
+    nTum-6.4314-derived exon
+
+Because these two transcripts can originate from the same genomic locus,
+the comparative genomic analysis searches for the ZNF24–nTum-6.4314
+locus rather than attempting to distinguish transcript isoforms.
+
+ZNF24 exons 1–3 therefore constitute the shared host-gene anchor.
+ZNF24 exon 4 is analyzed as an additional host-derived exon whose
+presence can distinguish the longer genomic configuration, whereas
+nTum-6.4314 is analyzed independently as the TE-derived component.
+
+
+1. Create the ZNF24 analysis directory
+---------------------------------------
+
+Create an independent working directory
+
+.. code-block:: bash
+
+    cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
+
+    mkdir -p ANALYSES/ZNF24/{intermediate,results,scripts,sequences}
+
+    cd ANALYSES/ZNF24
+
+
+2. Create the ZNF24 host exon probes
+------------------------------------
+
+The host probe set contains exons 1–4 from the five-exon
+*Myotis daubentonii* transcript. Exons 1–3 are shared by both transcript
+configurations.
+
+Create the FASTA file
+
+.. code-block:: bash
+
+    nano sequences/ZNF24_host_exon_probes.fa
+
+Use the following FASTA headers
+
+.. code-block:: bash
+
+    >ZNF24_exon1_match
+    [exon 1 sequence]
+
+    >ZNF24_exon2_match
+    [exon 2 sequence]
+
+    >ZNF24_exon3_match
+    [exon 3 sequence]
+
+    >ZNF24_exon4_match
+    [exon 4 sequence]
+
+Paste the corresponding exon sequences supplied for the five-exon
+*Myotis daubentonii* transcript.
+
+Remove accidental whitespace
+
+.. code-block:: bash
+
+    sed -i '' '/^>/! s/[[:space:]]//g' \
+    sequences/ZNF24_host_exon_probes.fa
+
+Confirm the FASTA headers
+
+.. code-block:: bash
+
+    grep '^>' sequences/ZNF24_host_exon_probes.fa
+
+The expected output is
+
+.. code-block:: bash
+
+    >ZNF24_exon1_match
+    >ZNF24_exon2_match
+    >ZNF24_exon3_match
+    >ZNF24_exon4_match
+
+
+3. Create the nTum-6.4314 TE-derived probe
+------------------------------------------
+
+The terminal TE-derived exon is identical between the two candidate
+transcript configurations and is therefore analyzed independently.
+
+Create the TE probe FASTA
+
+.. code-block:: bash
+
+    nano sequences/ZNF24_nTum-6.4314_probe.fa
+
+Use the header
+
+.. code-block:: bash
+
+    >nTum-6.4314_match
+
+Paste the complete nTum-6.4314-derived exon sequence supplied from the
+*Myotis daubentonii* transcript.
+
+Remove accidental whitespace
+
+.. code-block:: bash
+
+    sed -i '' '/^>/! s/[[:space:]]//g' \
+    sequences/ZNF24_nTum-6.4314_probe.fa
+
+Confirm the header
+
+.. code-block:: bash
+
+    head -1 sequences/ZNF24_nTum-6.4314_probe.fa
+
+The expected output is
+
+.. code-block:: bash
+
+    >nTum-6.4314_match
+
+
+4. Verify probe lengths
+-----------------------
+
+Verify that all host and TE probes were copied correctly
+
+.. code-block:: bash
+
+    awk '
+    /^>/ {
+        if (name) print name, length(seq)
+        name=$0
+        seq=""
+        next
+    }
+    {
+        seq=seq $0
+    }
+    END {
+        print name, length(seq)
+    }
+    ' sequences/ZNF24_host_exon_probes.fa
+
+    awk '
+    /^>/ {
+        if (name) print name, length(seq)
+        name=$0
+        seq=""
+        next
+    }
+    {
+        seq=seq $0
+    }
+    END {
+        print name, length(seq)
+    }
+    ' sequences/ZNF24_nTum-6.4314_probe.fa
