@@ -15,7 +15,7 @@ exon 6 is analyzed separately as an RhiSin-1.24 probe.
 
 Create an independent working directory for the ZKSCAN7 analysis
 
-.. code-block::
+.. code-block:: bash
 
   cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
   mkdir -p ANALYSES/ZKSCAN7/{intermediate,results,scripts,sequences}
