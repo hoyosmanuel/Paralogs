@@ -160,4 +160,33 @@ eliminar saltos:
     results/NCL_signature_*.tsv \
     | cut -f1-6,7,14,15
 
+
+
+el resultado es este:
+
+Los 23 candidatos fuertes fueron:
+- Antrozous pallidus
+- Corynorhinus mexicanus
+- Corynorhinus townsendii
+- Eptesicus fuscus
+- Eptesicus nilssonii
+- Lasiurus ega
+- Myotis auriculus
+- Myotis californicus
+- Myotis daubentonii
+- Myotis evotis
+- Myotis lucifugus
+- Myotis myotis
+- Myotis mystacinus
+- Myotis nigricans
+- Myotis occultus
+- Myotis pilosus
+- Myotis thysanodes
+- Myotis velifer
+- Myotis vivesi
+- Myotis volans
+- Myotis yumanensis
+- Pipistrellus kuhlii (pero hay varias copias de NCL no es el mejor)
+- Plecotus auritus
+
     
