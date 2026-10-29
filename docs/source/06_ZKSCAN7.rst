@@ -127,3 +127,104 @@ Finally, verify the probe length
         print name, length(seq)
     }
     ' sequences/ZKSCAN7_RhiSin-1.24_probe.fa
+
+
+
+3) Test the ZKSCAN7 host and RhiSin-1.24 probes in Rhinolophus hipposideros
+----------------------------------------------------------------------------
+
+Use *Rhinolophus hipposideros* as the positive reference species.
+
+From the ZKSCAN7 analysis directory
+
+.. code-block:: bash
+
+    cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/ZKSCAN7
+
+Create the BLAST database directory
+
+.. code-block:: bash
+
+    mkdir -p intermediate/blast_db
+
+Build a nucleotide BLAST database from the *Rhinolophus hipposideros*
+genome
+
+.. code-block:: bash
+
+    makeblastdb \
+    -in ../../SPECIES/Rhinolophus_hipposideros/*.fa \
+    -dbtype nucl \
+    -out intermediate/blast_db/Rhinolophus_hipposideros
+
+Search the five host-derived ZKSCAN7 exons
+
+.. code-block:: bash
+
+    blastn \
+    -query sequences/ZKSCAN7_host_exon_probes.fa \
+    -db intermediate/blast_db/Rhinolophus_hipposideros \
+    -task blastn \
+    -word_size 7 \
+    -dust no \
+    -evalue 1e-10 \
+    -outfmt '6 qseqid sseqid pident length qlen qstart qend sstart send evalue bitscore qcovhsp' \
+    > intermediate/ZKSCAN7_exon_matches_Rhinolophus_hipposideros.tsv
+
+Search the RhiSin-1.24-derived sequence independently
+
+.. code-block:: bash
+
+    blastn \
+    -query sequences/ZKSCAN7_RhiSin-1.24_probe.fa \
+    -db intermediate/blast_db/Rhinolophus_hipposideros \
+    -task blastn \
+    -word_size 7 \
+    -dust no \
+    -evalue 1e-20 \
+    -outfmt '6 qseqid sseqid pident length qlen qstart qend sstart send evalue bitscore qcovhsp' \
+    > intermediate/ZKSCAN7_RhiSin-1.24_matches_Rhinolophus_hipposideros.tsv
+
+Combine both sets of matches
+
+.. code-block:: bash
+
+    cat \
+    intermediate/ZKSCAN7_exon_matches_Rhinolophus_hipposideros.tsv \
+    intermediate/ZKSCAN7_RhiSin-1.24_matches_Rhinolophus_hipposideros.tsv \
+    > intermediate/ZKSCAN7_all_matches_Rhinolophus_hipposideros.tsv
+
+Display the results grouped first by scaffold and then in the biological
+probe order Exon1–Exon5 followed by RhiSin-1.24
+
+.. code-block:: bash
+
+    awk 'BEGIN{OFS="\t"}
+    {
+        if ($1=="ZKSCAN7_exon1_match")          order=1
+        else if ($1=="ZKSCAN7_exon2_match")     order=2
+        else if ($1=="ZKSCAN7_exon3_match")     order=3
+        else if ($1=="ZKSCAN7_exon4_match")     order=4
+        else if ($1=="ZKSCAN7_exon5_match")     order=5
+        else if ($1=="RhiSin-1.24_match")        order=6
+        else                                    order=99
+
+        print $0, order
+    }' intermediate/ZKSCAN7_all_matches_Rhinolophus_hipposideros.tsv \
+    | sort -k2,2 -k13,13n \
+    | cut -f1-12 \
+    | column -t
+
+
+ver:
+
+.. code-block:: bash
+
+  awk '$2=="OZ077431" {
+      start=($8<$9?$8:$9)
+      end=($8>$9?$8:$9)
+  
+      if (end >= 58250000 && start <= 58280000)
+          print
+  }' intermediate/ZKSCAN7_all_matches_Rhinolophus_hipposideros.tsv \
+  | column -t
