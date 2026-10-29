@@ -145,6 +145,19 @@ eliminar saltos:
 4) Automate detection of candidate NCL-Charlie8 loci for all species
 --------------------------------------------------------------------
 
-cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/NCL
+.. code-block:: bash
+
+    cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/NCL
+
+.. code-block:: bash
+
+    grep -h -v '^Species' results/NCL_signature_*.tsv \
+    | awk -F'\t' '{count[$NF]++} END {for (x in count) print x, count[x]}'
+
+.. code-block:: bash
+
+    grep -h 'NCL_CHIMERIC_CANDIDATE' \
+    results/NCL_signature_*.tsv \
+    | cut -f1-6,7,14,15
 
     
