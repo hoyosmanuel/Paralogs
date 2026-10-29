@@ -1393,3 +1393,69 @@ hacer el script:
 	python3 scripts/02_find_TMPO_paralog_signature.py Myotis_daubentonii
 
 
+el resultado es este:
+
+.. code-block:: bash
+
+	================================================================
+	Myotis_daubentonii
+	================================================================
+	
+	[TMPO PARALOG]
+	Scaffold: NC_081859
+	Strand:   -
+	
+	Exon1    11870994-11871278    id=99.649%   cov=100%
+	Exon2    11859775-11859901    id=99.213%   cov=100%
+	
+	TE matches within 5000 bp of Exon2 biological 3':
+	
+	  SPIN_MI_match
+	    coordinates: 11856166-11859021
+	    identity:    94.443%
+	    coverage:    100%
+	    distance:    754 bp
+	
+	  MicTal-1.345_match
+	    coordinates: 11856407-11858366
+	    identity:    98.418%
+	    coverage:    100%
+	    distance:    1409 bp
+	
+	-> TMPO_PARALOG_SIGNATURE_FOUND
+	
+	[TMPO-LIKE LOCUS]
+	Scaffold: NC_081841
+	Strand:   -
+	
+	Exon1    17767416-17767670    id=89.804%   cov=89%
+	Exon2    17753160-17753286    id=96.850%   cov=100%
+	
+	TE match: NOT FOUND within 5000 bp of Exon2 biological 3'
+	
+	-> TMPO_LIKE_LOCUS_NO_3PRIME_TE
+	
+	================================================================
+	TMPO paralog signatures detected: 1
+	================================================================
+	
+	Positive loci:
+	  NC_081859:11859775-11871278 (-)
+	
+	Result table:
+	/Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/TMPO/results/TMPO_signature_Myotis_daubentonii.tsv
+	
+	Raw Exon1/Exon2 matches:
+	/Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/TMPO/intermediate/Myotis_daubentonii/TMPO_exon_matches_Myotis_daubentonii.tsv
+	
+	Raw TE-probe matches:
+	/Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/TMPO/intermediate/Myotis_daubentonii/TMPO_TE_matches_Myotis_daubentonii.tsv
+
+
+luego hacemos esto para ver qué coincide con los TEs en la secuencia:
+
+.. code-block:: bash
+
+	awk '$1=="NC_081859" && $2 < 11859021 && $3 > 11856166' \
+	../../SPECIES/Myotis_daubentonii/mMyoDau2.1.pri.bed
+	
