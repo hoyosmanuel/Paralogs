@@ -1459,3 +1459,34 @@ luego hacemos esto para ver qué coincide con los TEs en la secuencia:
 	awk '$1=="NC_081859" && $2 < 11859021 && $3 > 11856166' \
 	../../SPECIES/Myotis_daubentonii/mMyoDau2.1.pri.bed
 	
+
+
+2) Vamos a hacerlo para todas las especies:
+-------------------------------------------
+
+.. code-block:: bash
+
+	cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/TMPO
+
+.. code-block:: bash
+
+	mkdir -p results/batch_logs
+
+.. code-block:: bash
+
+	find ../../SPECIES -mindepth 1 -maxdepth 1 -type d -print0 \
+	| xargs -0 -n1 -P 3 sh -c '
+	    d="$1"
+	    species=$(basename "$d")
+	
+	    echo "START: $species"
+	
+	    if python3 scripts/02_find_TMPO_paralog_signature.py "$species" \
+	        > "results/batch_logs/${species}.log" 2>&1
+	    then
+	        echo "OK:    $species"
+	    else
+	        echo "FAILED: $species"
+	        touch "results/batch_logs/${species}.failed"
+	    fi
+	' sh
