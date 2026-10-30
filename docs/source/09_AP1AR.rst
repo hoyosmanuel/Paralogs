@@ -173,3 +173,15 @@ The expected result is::
    -evalue 1e-20 \
    -outfmt '6 qseqid sseqid pident length qlen qstart qend sstart send evalue bitscore qcovhsp' \
    > intermediate/AP1AR_Mariner3_matches_Plecotus_auritus.tsv
+
+.. code-block:: bash
+
+   sort -k1,1 -k11,11nr intermediate/AP1AR_exon_matches_Plecotus_auritus.tsv \
+   | awk '!seen[$1]++' \
+   | column -t
+
+.. code-block:: bash
+
+   sort -k11,11nr intermediate/AP1AR_Mariner3_matches_Plecotus_auritus.tsv \
+   | head -20 \
+   | column -t
