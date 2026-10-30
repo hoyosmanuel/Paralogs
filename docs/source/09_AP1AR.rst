@@ -1,6 +1,6 @@
 1) Create the AP1AR analysis directory
 --------------------------------------
-
+ 
 Create an independent working directory for the AP1AR analysis
 
 .. code-block:: bash
