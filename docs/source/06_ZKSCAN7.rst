@@ -1070,3 +1070,53 @@ contain more than one ZKSCAN7-like locus.
 
 Ahora queda mucho más robusto: **validación → creación automática de logs → batch → comprobación de fallos → resumen final**. Y además ya dejamos explícito que los conteos finales son **loci**, no especies.
 
+
+4. Resultados:
+---------------
+
+.. code-block:: bash
+
+  find results -maxdepth 1 \
+  -name 'ZKSCAN7_signature_*.tsv' \
+  | wc -l
+
+.. code-block:: bash
+
+  find results/batch_logs \
+  -name '*.failed' \
+  -exec basename {} .failed \; \
+  | sort
+
+.. code-block:: bash
+
+  grep -h -v '^Species' \
+  results/ZKSCAN7_signature_*.tsv \
+  | awk -F'\t' '
+  NF > 1 {
+      count[$NF]++
+  }
+  END {
+      for (x in count)
+          print x, count[x]
+  }' \
+  | sort
+
+.. code-block:: bash
+
+  grep -h 'ZKSCAN7_CHIMERIC' \
+  results/ZKSCAN7_signature_*.tsv \
+  | column -t
+
+.. code-block:: bash
+
+
+
+  siete postivos extraordinariamente consistentes:
+                  RhiSin identity   qcov    distance from ZKSCAN7
+  R. affinis          94.505%       100%       6,566 bp
+  R. ferrumequinum    94.718%       100%       6,608 bp
+  R. foetidus         92.619%       100%       7,079 bp
+  R. hipposideros    100.000%       100%       6,651 bp
+  R. pearsonii        94.292%       100%       6,561 bp
+  R. perniger         92.547%       100%       7,135 bp
+  R. trifoliatus      92.619%       100%       7,056 bp
