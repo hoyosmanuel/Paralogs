@@ -1094,4 +1094,38 @@ Primero corre solo:
     Myotis_daubentonii
 
 
-Si nos devuelve los **14,185 bp**, entonces soltamos las ~100 especies.
+Verificar resultados!!
+-----------------------
+
+.. code-block:: bash
+
+    find results -maxdepth 1 \
+    -name 'ZNF24_signature_*.tsv' \
+    | wc -l
+
+.. code-block:: bash
+
+    find results/batch_logs \
+    -name '*.failed' \
+    -exec basename {} .failed \; \
+    | sort
+
+.. code-block:: bash
+
+    grep -h -v '^Species' \
+    results/ZNF24_signature_*.tsv \
+    | awk -F'\t' '
+    NF > 1 {
+        count[$NF]++
+    }
+    END {
+        for (x in count)
+            print x, count[x]
+    }' \
+    | sort
+
+.. code-block:: bash
+    
+    grep -h 'ZNF24_NTUM' \
+    results/ZNF24_signature_*.tsv \
+    | column -t
