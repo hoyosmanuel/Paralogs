@@ -209,3 +209,49 @@ Verify the length of the hAT1_mMyo-derived exon
         print name, length(seq)
     }
     ' sequences/KATNAL1_hAT1_mMyo_probe.fa
+
+
+
+5. VERIFCAR!!!!
+------------------------
+
+.. code-block:: bash
+
+    find results -maxdepth 1 \
+    -name 'KATNAL1_signature_*.tsv' \
+    | wc -l
+
+.. code-block:: bash
+
+    find results/batch_logs \
+    -name '*.failed' \
+    -exec basename {} .failed \; \
+    | sort
+
+.. code-block:: bash
+
+    grep -h -v '^Species' \
+    results/KATNAL1_signature_*.tsv \
+    | awk -F'\t' '
+    NF > 1 {
+        count[$NF]++
+    }
+    END {
+        for (x in count)
+            print x, count[x]
+    }' \
+    | sort
+
+.. code-block:: bash
+
+    grep -h 'KATNAL1_.*_HAT1' \
+    results/KATNAL1_signature_*.tsv \
+    | column -t
+
+Para ver únicamente los positivos
+
+.. code-block:: bash
+
+    awk -F'\t' '$NF=="KATNAL1_COMPLETE_HAT1"' \
+    results/KATNAL1_signature_*.tsv \
+    | column -t
