@@ -1,3 +1,7 @@
+I. IDENTIFY THE AP1AR GENOMIC ARCHITECTURE
+======================================================
+
+
 1) Create the AP1AR analysis directory
 --------------------------------------
  
