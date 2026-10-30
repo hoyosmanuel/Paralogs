@@ -133,3 +133,43 @@ Check the TE-derived probe.
 The expected result is::
 
    >Mariner3_pKuh_match 1404
+
+
+5. Validar Plecotus auritus
+-----------------------------
+
+.. code-block:: bash
+
+   cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/AP1AR
+   mkdir -p intermediate/blast_db
+
+.. code-block:: bash
+
+   makeblastdb \
+   -in ../../SPECIES/Plecotus_auritus/*.fa \
+   -dbtype nucl \
+   -out intermediate/blast_db/Plecotus_auritus
+
+.. code-block:: bash
+
+   blastn \
+   -query sequences/AP1AR_host_exon_probes.fa \
+   -db intermediate/blast_db/Plecotus_auritus \
+   -task blastn \
+   -word_size 7 \
+   -dust no \
+   -evalue 1e-5 \
+   -outfmt '6 qseqid sseqid pident length qlen qstart qend sstart send evalue bitscore qcovhsp' \
+   > intermediate/AP1AR_exon_matches_Plecotus_auritus.tsv
+
+.. code-block:: bash
+   
+   blastn \
+   -query sequences/AP1AR_Mariner3_pKuh_probe.fa \
+   -db intermediate/blast_db/Plecotus_auritus \
+   -task blastn \
+   -word_size 7 \
+   -dust no \
+   -evalue 1e-20 \
+   -outfmt '6 qseqid sseqid pident length qlen qstart qend sstart send evalue bitscore qcovhsp' \
+   > intermediate/AP1AR_Mariner3_matches_Plecotus_auritus.tsv
