@@ -1507,3 +1507,991 @@ degradación considerable del extremo 5′ del componente derivado del TE.
 Estos dos loci se conservaron como arquitecturas host completas con un
 exón 7 degradado o incierto, pero no fueron incluidos entre los
 positivos completos de alta confianza.
+
+
+12. Integración de ZFP28 en el análisis final de dN/dS
+======================================================
+
+12.1. Objetivo de esta segunda etapa
+------------------------------------
+
+La detección de la arquitectura genómica descrita en las secciones
+anteriores responde a una pregunta distinta de la reconstrucción de la
+CDS utilizada para análisis de selección.
+
+La primera etapa identificó loci con:
+
+* los seis exones host de ZFP28;
+* un elemento GOLEM-1p situado en el extremo biológico 3';
+* orientación coherente;
+* orden exónico coherente;
+* y, cuando fue posible, un sitio aceptor canónico antes del exón 7
+  derivado del TE.
+
+Sin embargo, las sondas utilizadas para detectar la arquitectura no deben
+interpretarse automáticamente como límites exactos de la CDS del
+transcrito quimérico de referencia.
+
+Por esta razón, la reconstrucción para dN/dS se realizó a partir del
+transcrito quimérico experimental de referencia y no a partir del consenso
+GOLEM-1p ni de los límites de los HSPs de BLAST.
+
+El directorio general utilizado para esta etapa fue::
+
+   /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/dNdS_FINAL
+
+La arquitectura ZFP28 se trabajó en::
+
+   ANALYSES/dNdS_FINAL/reference_cds/ZFP28
+   ANALYSES/dNdS_FINAL/reference_probes/ZFP28
+   ANALYSES/dNdS_FINAL/sequences/ZFP28
+   ANALYSES/dNdS_FINAL/results
+   ANALYSES/dNdS_FINAL/scripts
+
+
+12.2. Transcrito quimérico de referencia
+----------------------------------------
+
+La referencia para reconstrucción codificante de ZFP28 fue:
+
+.. code-block:: text
+
+   Species: Rousettus aegyptiacus
+   RNA-seq accession: SRR18652228
+   Transcript: STRG.7996.1
+   Transcript length: 2746 nt
+
+La anotación codificante utilizada fue:
+
+.. code-block:: text
+
+   ORF:             73-1245
+   HOST component:  73-883
+   TE component:    884-1245
+   HOST length:     811 nt
+   TE length:       362 nt
+   CHIMERA length: 1173 nt
+   Protein length:  390 aa
+
+El archivo maestro que registra estas coordenadas es::
+
+   ANALYSES/dNdS_FINAL/config/reference_coding_segments.tsv
+
+IMPORTANTE
+~~~~~~~~~~
+
+El consenso GOLEM-1p fue utilizado para identificar y confirmar la
+arquitectura genómica. No fue utilizado para imponer los límites
+codificantes.
+
+La secuencia TE utilizada para reconstrucción codificante corresponde a
+los 362 nt derivados del TE presentes en el transcrito quimérico real de
+``Rousettus aegyptiacus``.
+
+
+13. Validación exacta de la CDS HOST de referencia
+==================================================
+
+13.1. BLAST diagnóstico del HOST codificante
+---------------------------------------------
+
+Se utilizó una única búsqueda diagnóstica del HOST codificante de
+``STRG.7996.1`` contra el genoma de ``Rousettus aegyptiacus`` para
+resolver cómo los 811 nt se distribuían entre los exones host.
+
+.. code-block:: bash
+
+   cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
+
+   blastn \
+   -query ANALYSES/dNdS_FINAL/reference_cds/ZFP28/host_cds.fa \
+   -subject SPECIES/Rousettus_aegyptiacus/mRouAeg1.4.pri.fa \
+   -task blastn \
+   -dust no \
+   -evalue 1e-20 \
+   -outfmt "6 qseqid sseqid pident length qlen qstart qend sstart send gaps qcovs bitscore" \
+   | sort -k6,6n
+
+
+13.2. Estructura codificante resuelta
+-------------------------------------
+
+La CDS HOST de 811 nt quedó distribuida de la siguiente manera:
+
+.. code-block:: text
+
+   exon 1 CDS parcial = 220 nt
+   exon 2 completo    =  92 nt
+   exon 3 completo    = 127 nt
+   exon 4 completo    =  96 nt
+   exon 5 completo    = 164 nt
+   exon 6 completo    = 112 nt
+                        -------
+   TOTAL              = 811 nt
+
+Las coordenadas genómicas de referencia en
+``scaffold_m13_p_14`` fueron:
+
+.. code-block:: text
+
+   strand = -
+
+   exon1 completo: 34579771-34579192
+   exon1 CDS:      34579411-34579192
+
+   exon2:          34578679-34578588
+   exon3:          34572883-34572757
+   exon4:          34572579-34572484
+   exon5:          34570629-34570466
+   exon6:          34570085-34569974
+
+
+13.3. Reconstrucción literal desde el genoma
+--------------------------------------------
+
+Se extrajeron los seis segmentos codificantes desde el genoma y se
+comparó su concatenación con el FASTA de referencia.
+
+El resultado fue:
+
+.. code-block:: text
+
+   exon1 CDS = 220
+   exon2 CDS = 92
+   exon3 CDS = 127
+   exon4 CDS = 96
+   exon5 CDS = 164
+   exon6 CDS = 112
+   HOST = 811
+   reference = 811
+   EXACT_MATCH = True
+
+Por lo tanto, la CDS HOST del transcrito de referencia quedó validada
+nucleótido por nucleótido contra el genoma.
+
+Los archivos generados fueron::
+
+   ANALYSES/dNdS_FINAL/reference_probes/ZFP28/ZFP28_rAeg_host_CDS_probes.fa
+   ANALYSES/dNdS_FINAL/reference_probes/ZFP28/ZFP28_rAeg_host_CDS_genomic.fa
+
+
+14. Validación exacta de la CDS TE de referencia
+================================================
+
+La región codificante derivada de GOLEM-1p del transcrito de referencia
+tiene 362 nt.
+
+En el genoma de ``Rousettus aegyptiacus`` corresponde a:
+
+.. code-block:: text
+
+   scaffold_m13_p_14
+   strand = -
+   genomic interval = 34550799-34551160
+
+Después de extraer esa región, invertirla a orientación transcripcional y
+compararla con::
+
+   ANALYSES/dNdS_FINAL/reference_cds/ZFP28/te_cds.fa
+
+se obtuvo:
+
+.. code-block:: text
+
+   genomic TE CDS = 362
+   reference TE   = 362
+   EXACT_MATCH    = True
+
+Una búsqueda BLAST diagnóstica independiente también recuperó en ese
+locus:
+
+.. code-block:: text
+
+   qstart = 1
+   qend   = 362
+   identity = 100%
+   gaps = 0
+
+Con esto la referencia completa quedó validada:
+
+.. code-block:: text
+
+   HOST    = 811 nt
+   TE      = 362 nt
+   CHIMERA = 1173 nt
+   protein = 390 aa
+
+
+15. Regla de fase en la unión HOST-TE
+=====================================
+
+En ZFP28, como en las otras arquitecturas utilizadas para selección, la
+unión HOST-TE corta un codón.
+
+La referencia tiene:
+
+.. code-block:: text
+
+   HOST length % 3 = 1
+   TE length   % 3 = 2
+
+Por lo tanto, el codón situado en la frontera está formado por:
+
+.. code-block:: text
+
+   1 nt HOST + 2 nt TE
+
+Este codón mixto se conserva en la CDS quimérica completa.
+
+Sin embargo, para análisis independientes de HOST y TE no se debe
+asignar ese codón a ninguno de los dos componentes.
+
+Por lo tanto:
+
+.. code-block:: text
+
+   HOST puro para selección = HOST[:-1]
+   TE puro para selección   = TE[2:]
+
+Esta regla evita atribuir un codón de origen mixto exclusivamente al host
+o exclusivamente al TE.
+
+
+16. Auditoría de los BLAST de arquitectura existentes
+=====================================================
+
+16.1. Razón de la auditoría
+---------------------------
+
+Los BLAST utilizados para detectar la arquitectura habían sido generados
+con sondas completas de exones. BLAST es una alineación local y puede
+recortar bases en los extremos de un HSP.
+
+Por ejemplo, se observaron resultados como:
+
+.. code-block:: text
+
+   q=2-92/92
+   q=10-580/580
+   q=124-580/580
+
+Estos valores no demuestran por sí solos que las bases no alineadas hayan
+sido eliminadas biológicamente.
+
+Por esta razón, los HSPs antiguos no se trataron como límites exactos de
+exón.
+
+El script de auditoría fue::
+
+   ANALYSES/dNdS_FINAL/scripts/25_audit_ZFP28_existing_hits.py
+
+La salida fue::
+
+   ANALYSES/dNdS_FINAL/results/ZFP28_host_existing_hits_audit.tsv
+
+
+16.2. Hallazgo crítico: hits parálogos
+--------------------------------------
+
+La auditoría reveló además que seleccionar únicamente el mejor hit por
+scaffold y strand podía recuperar un paralogo fuera del locus ZFP28.
+
+Por ejemplo, en especies de ``Molossus`` existían hits de exon 3 situados
+varios megabases lejos de los otros exones del locus.
+
+Por lo tanto, la reconstrucción final añadió una regla adicional:
+
+**un hit exónico solo podía utilizarse si estaba físicamente dentro del
+locus ZFP28 previamente identificado por el detector de arquitectura.**
+
+Esta restricción es esencial y no debe eliminarse en futuras
+reimplementaciones.
+
+
+17. Reconstrucción final de ZFP28 en las 24 especies
+====================================================
+
+17.1. Principio de reconstrucción
+---------------------------------
+
+La reconstrucción final no volvió a ejecutar búsquedas genómicas
+exploratorias.
+
+Se reutilizaron:
+
+* los 24 loci ``ZFP28_CHIMERIC_COMPLETE`` ya identificados;
+* los BLAST de exones ya existentes;
+* la tabla de validación del exón 7;
+* los genomas originales.
+
+El script final fue::
+
+   ANALYSES/dNdS_FINAL/scripts/26_reconstruct_ZFP28_final.py
+
+Su lógica fue:
+
+#. leer cada uno de los 24 loci previamente identificados;
+#. restringir los hits exónicos al scaffold, strand y locus correcto;
+#. seleccionar el mejor ancla de cada exon dentro del locus;
+#. usar ``qstart`` y ``qend`` solamente para extender el HSP hacia los
+   límites esperados del exon;
+#. extraer del genoma la secuencia literal resultante;
+#. no corregir mutaciones, indels, stops o bases ambiguas;
+#. tomar solo los últimos 220 nt del exon 1 en orientación
+   transcripcional;
+#. concatenar los exones 2-6;
+#. recuperar los primeros 362 nt del exón 7 en orientación
+   transcripcional;
+#. concatenar HOST + TE;
+#. traducir la secuencia;
+#. registrar marco, inicio, stops y bases ambiguas.
+
+IMPORTANTE
+~~~~~~~~~~
+
+El script no "repara" secuencias.
+
+Si una especie posee una inserción, deleción, stop interno o sustitución,
+esa diferencia debe permanecer en la secuencia reconstruida.
+
+
+17.2. Salidas de reconstrucción
+-------------------------------
+
+El script produjo:
+
+.. code-block:: text
+
+   ANALYSES/dNdS_FINAL/sequences/ZFP28/host_cds.all.fa
+   ANALYSES/dNdS_FINAL/sequences/ZFP28/te_cds.all.fa
+   ANALYSES/dNdS_FINAL/sequences/ZFP28/chimera_cds.all.fa
+   ANALYSES/dNdS_FINAL/sequences/ZFP28/chimera_protein.all.fa
+
+y la tabla:
+
+.. code-block:: text
+
+   ANALYSES/dNdS_FINAL/results/ZFP28_QC.tsv
+
+
+18. Corrección del criterio de QC
+=================================
+
+18.1. Problema detectado
+------------------------
+
+La primera versión del QC exigía que todas las especies tuvieran un stop
+terminal exactamente en el mismo extremo homólogo definido por los 362 nt
+TE de la referencia.
+
+Ese criterio resultó demasiado estricto.
+
+La ausencia de un stop terminal exactamente en el extremo homólogo de la
+referencia no implica necesariamente una pérdida de capacidad codificante.
+En otra especie, la ORF puede continuar más allá del extremo homólogo
+analizado.
+
+Por ejemplo, ``Eonycteris spelaea`` presentó:
+
+.. code-block:: text
+
+   ATG = YES
+   chimera mod 3 = 0
+   internal stops = 0
+   ambiguous bases = 0
+   terminal stop at reference endpoint = NO
+
+La secuencia no debía excluirse únicamente por la ausencia de stop en ese
+punto.
+
+
+18.2. Criterios finales para inclusión en dN/dS
+-----------------------------------------------
+
+Una secuencia fue considerada ``PASS`` cuando cumplió:
+
+.. code-block:: text
+
+   chimera length % 3 = 0
+   start codon = ATG
+   internal stops = 0
+   ambiguous bases = 0
+   HOST phase = 1
+   TE phase = 2
+   exon7 acceptor = CANONICAL_AG
+
+La presencia de un stop terminal exactamente en el extremo homólogo de la
+referencia fue conservada como información descriptiva, pero dejó de ser
+un criterio de exclusión.
+
+Los casos con problemas codificantes independientes, por ejemplo stops
+internos, fueron clasificados como ``FAIL`` incluso cuando además
+presentaban un sitio aceptor no canónico.
+
+
+18.3. Script de reclasificación final
+-------------------------------------
+
+El script que aplicó estos criterios y regeneró los FASTA para selección
+fue::
+
+   ANALYSES/dNdS_FINAL/scripts/27_finalize_ZFP28_QC.py
+
+Este script no repitió BLAST ni reconstrucción genómica.
+
+Reutilizó:
+
+.. code-block:: text
+
+   host_cds.all.fa
+   te_cds.all.fa
+   chimera_cds.all.fa
+   chimera_protein.all.fa
+   ZFP28_QC.tsv
+
+y produjo los conjuntos finales de selección.
+
+
+19. Resultado final de ZFP28
+============================
+
+La reclasificación final produjo:
+
+.. code-block:: text
+
+   Candidates = 24
+   PASS        = 15
+   REVIEW      = 0
+   FAIL        = 9
+
+
+19.1. Especies PASS
+-------------------
+
+Las 15 especies incluidas en los análisis posteriores de selección fueron:
+
+.. code-block:: text
+
+   Eonycteris_spelaea
+   Eumops_nanus
+   Hipposideros_armiger
+   Hipposideros_caffer
+   Hipposideros_larvatus
+   Hipposideros_swinhoei
+   Hypsignathus_monstrosus
+   Molossus_alvarezi
+   Molossus_molossus
+   Rhinolophus_ferrumequinum
+   Rhinolophus_hipposideros
+   Rhinolophus_perniger_lanosus
+   Rhinolophus_trifoliatus
+   Rousettus_aegyptiacus
+   Tadarida_brasiliensis
+
+
+19.2. Especies FAIL
+-------------------
+
+Las nueve especies excluidas de los FASTA de selección fueron:
+
+.. code-block:: text
+
+   Cynopterus_sphinx
+   Desmodus_rotundus
+   Hipposideros_abae
+   Hipposideros_jonesi
+   Rhinolophus_affinis
+   Rhinolophus_foetidus
+   Rhinolophus_pearsonii
+   Rhinopoma_microphyllum
+   Rhinopoma_muscatellum
+
+Las razones de exclusión se conservan individualmente en::
+
+   ANALYSES/dNdS_FINAL/results/ZFP28_QC.tsv
+
+y comprenden, según la especie:
+
+* stops internos;
+* pérdida del ATG esperado;
+* sitio aceptor no canónico del exón 7;
+* combinaciones de los anteriores.
+
+No se debe describir automáticamente ninguno de estos loci como
+``pseudogenized`` únicamente a partir de este análisis genómico.
+
+La interpretación correcta es que la reconstrucción literal de esa
+arquitectura no produjo una CDS homologable intacta bajo los criterios de
+selección utilizados.
+
+
+20. FASTA finales de ZFP28 para selección
+=========================================
+
+Después de la reclasificación se generaron:
+
+.. code-block:: text
+
+   ANALYSES/dNdS_FINAL/sequences/ZFP28/host_cds_for_selection.fa
+   ANALYSES/dNdS_FINAL/sequences/ZFP28/te_cds_for_selection.fa
+   ANALYSES/dNdS_FINAL/sequences/ZFP28/chimera_cds.usable.fa
+   ANALYSES/dNdS_FINAL/sequences/ZFP28/chimera_protein.usable.fa
+
+Contenido:
+
+``host_cds_for_selection.fa``
+   Solo codones de origen HOST puro. Se eliminó el último nucleótido del
+   HOST porque participa en el codón mixto de la unión HOST-TE.
+
+``te_cds_for_selection.fa``
+   Solo codones de origen TE puro. Se eliminaron los primeros dos
+   nucleótidos del TE porque participan en el codón mixto de la unión.
+
+``chimera_cds.usable.fa``
+   CDS quimérica completa. Conserva el codón mixto de la unión.
+
+``chimera_protein.usable.fa``
+   Traducción de la CDS quimérica de las especies que pasaron QC.
+
+
+21. Regla metodológica general aprendida durante este proyecto
+==============================================================
+
+La distinción siguiente debe conservarse en cualquier reproducción futura:
+
+Arquitectura genómica
+---------------------
+
+Se utiliza para responder:
+
+* ¿existe el locus?
+* ¿están presentes los exones host?
+* ¿existe el TE apropiado en el extremo esperado?
+* ¿se conserva la orientación?
+* ¿se conserva la estructura general?
+
+Puede utilizar sondas exónicas y consensos TE.
+
+Reconstrucción codificante
+--------------------------
+
+Se utiliza para responder:
+
+* ¿qué nucleótidos pertenecen realmente a la CDS?
+* ¿qué parte es host?
+* ¿qué parte es TE?
+* ¿se conserva la fase?
+* ¿la secuencia es utilizable para análisis de selección?
+
+Debe estar anclada al transcrito quimérico de referencia y a sus límites
+codificantes reales.
+
+**No se deben sustituir los límites de la CDS por coordenadas del consenso
+TE ni por los extremos de un HSP local de BLAST.**
+
+
+22. Estado final de las seis arquitecturas
+==========================================
+
+Al terminar la reconstrucción de ZFP28, el estado del proyecto quedó:
+
++-----------+-------------------+------------------+----------------------------------+
+| Architecture | Candidates/total | Usable for dN/dS | Final status                     |
++===========+===================+==================+==================================+
+| FBXO3     | 6                 | 6                | closed                           |
++-----------+-------------------+------------------+----------------------------------+
+| TMPO      | 15                | 15               | closed                           |
++-----------+-------------------+------------------+----------------------------------+
+| NCL       | 23 reconstructed  | 15               | closed                           |
++-----------+-------------------+------------------+----------------------------------+
+| ZKSCAN7   | 7                 | 7                | closed                           |
++-----------+-------------------+------------------+----------------------------------+
+| ZFP28     | 24                | 15               | closed                           |
++-----------+-------------------+------------------+----------------------------------+
+| KATNAL1   | 7                 | 1 intact         | descriptive only; no dN/dS       |
++-----------+-------------------+------------------+----------------------------------+
+
+
+22.1. FBXO3
+-----------
+
+Final result:
+
+.. code-block:: text
+
+   6 / 6 PASS
+
+Species:
+
+.. code-block:: text
+
+   Rhinolophus_affinis
+   Rhinolophus_ferrumequinum
+   Rhinolophus_hipposideros
+   Rhinolophus_pearsonii
+   Rhinolophus_sinicus
+   Rhinolophus_trifoliatus
+
+Reference dimensions:
+
+.. code-block:: text
+
+   HOST = 358 nt
+   TE = 1301 nt
+   CHIMERA = 1659 nt
+   protein = 552 aa
+
+Selection status::
+
+   prepare_for_selection = YES
+
+
+22.2. TMPO
+----------
+
+Final result:
+
+.. code-block:: text
+
+   15 / 15 PASS
+
+The true TE-derived CDS probe from the reference transcript was 1820 nt.
+All 15 species recovered the complete homologous TE coding segment.
+
+Reference dimensions:
+
+.. code-block:: text
+
+   HOST = 412 nt
+   TE = 1820 nt
+   CHIMERA = 2232 nt
+   protein = 743 aa
+
+Selection status::
+
+   prepare_for_selection = YES
+
+
+22.3. NCL
+---------
+
+A total of 23 candidate architectures were reconstructed.
+
+Final result:
+
+.. code-block:: text
+
+   PASS = 15
+   reconstructed = 23
+
+PASS species:
+
+.. code-block:: text
+
+   Antrozous_pallidus
+   Myotis_auriculus
+   Myotis_californicus
+   Myotis_daubentonii
+   Myotis_evotis
+   Myotis_lucifugus
+   Myotis_myotis
+   Myotis_mystacinus
+   Myotis_nigricans
+   Myotis_occultus
+   Myotis_pilosus
+   Myotis_thysanodes
+   Myotis_velifer
+   Myotis_vivesi
+   Myotis_yumanensis
+
+The failed reconstructions were retained descriptively and should not be
+called pseudogenes solely from this analysis.
+
+Selection status::
+
+   prepare_for_selection = YES
+
+
+22.4. ZKSCAN7
+-------------
+
+Final result:
+
+.. code-block:: text
+
+   7 / 7 PASS
+
+Species:
+
+.. code-block:: text
+
+   Rhinolophus_affinis
+   Rhinolophus_ferrumequinum
+   Rhinolophus_foetidus
+   Rhinolophus_hipposideros
+   Rhinolophus_pearsonii
+   Rhinolophus_perniger_lanosus
+   Rhinolophus_trifoliatus
+
+Reference CDS dimensions:
+
+.. code-block:: text
+
+   HOST = 811 nt
+   TE = 248 nt
+   CHIMERA = 1059 nt
+   protein = 352 aa
+
+The ``Rhinolophus hipposideros`` HOST contains a real +24 nt insertion
+relative to the reference, corresponding to +8 codons. It was retained
+rather than corrected.
+
+Selection status::
+
+   prepare_for_selection = YES
+
+
+22.5. KATNAL1
+-------------
+
+Seven genomic architectures were examined, but only
+``Myotis daubentonii`` retained an intact ORF under the literal genomic
+reconstruction.
+
+The remaining loci contained frameshifts and/or internal stops.
+
+Therefore:
+
+.. code-block:: text
+
+   prepare_chimera_for_selection = NO
+
+KATNAL1 is retained as a descriptive result but is not included in the
+multi-species dN/dS phase.
+
+
+23. Files that must exist before starting alignment
+===================================================
+
+For every architecture included in dN/dS:
+
+.. code-block:: text
+
+   FBXO3
+   TMPO
+   NCL
+   ZKSCAN7
+   ZFP28
+
+the following four files must exist:
+
+.. code-block:: text
+
+   ANALYSES/dNdS_FINAL/sequences/<ARCH>/host_cds_for_selection.fa
+   ANALYSES/dNdS_FINAL/sequences/<ARCH>/te_cds_for_selection.fa
+   ANALYSES/dNdS_FINAL/sequences/<ARCH>/chimera_cds.usable.fa
+   ANALYSES/dNdS_FINAL/sequences/<ARCH>/chimera_protein.usable.fa
+
+
+24. Próxima fase: alineamiento codónico y dN/dS
+===============================================
+
+La reconstrucción de secuencias quedó terminada.
+
+La siguiente fase planificada es:
+
+.. code-block:: text
+
+   CDS
+   -> translation
+   -> protein alignment
+   -> codon-aware backtranslation
+   -> codon alignment QC
+   -> dN/dS
+
+Las cinco arquitecturas que entran a esta fase son:
+
+.. code-block:: text
+
+   FBXO3
+   TMPO
+   NCL
+   ZKSCAN7
+   ZFP28
+
+Se preparó el script::
+
+   ANALYSES/dNdS_FINAL/scripts/30_make_codon_alignments.py
+
+El script está diseñado para crear, para cada arquitectura:
+
+.. code-block:: text
+
+   HOST protein alignment
+   HOST codon alignment
+
+   TE protein alignment
+   TE codon alignment
+
+   CHIMERA protein alignment
+   CHIMERA codon alignment
+
+En total:
+
+.. code-block:: text
+
+   5 architectures x 3 components = 15 codon alignments
+
+
+24.1. Estado exacto al finalizar esta documentación
+---------------------------------------------------
+
+Al intentar ejecutar:
+
+.. code-block:: bash
+
+   command -v mafft
+
+no se obtuvo ninguna ruta.
+
+La ejecución de::
+
+   python3 ANALYSES/dNdS_FINAL/scripts/30_make_codon_alignments.py
+
+terminó con:
+
+.. code-block:: text
+
+   ERROR: mafft is not available in PATH
+
+Por lo tanto, **los alineamientos MAFFT todavía NO han sido generados**.
+
+El siguiente paso operativo exacto es instalar MAFFT en el entorno activo,
+por ejemplo:
+
+.. code-block:: bash
+
+   conda install -c bioconda mafft
+
+o, si se utiliza mamba:
+
+.. code-block:: bash
+
+   mamba install -c bioconda mafft
+
+Después verificar:
+
+.. code-block:: bash
+
+   command -v mafft
+   mafft --version
+
+y ejecutar nuevamente:
+
+.. code-block:: bash
+
+   python3 \
+   ANALYSES/dNdS_FINAL/scripts/30_make_codon_alignments.py
+
+
+25. Advertencias para quien continúe este análisis
+==================================================
+
+#. No volver a descubrir ZFP28 desde cero. La arquitectura ya fue
+   identificada y validada en 24 loci.
+
+#. No volver a BLASTear la referencia de ZFP28 salvo que exista una razón
+   explícita de auditoría. HOST y TE fueron validados con
+   ``EXACT_MATCH = True`` contra ``Rousettus aegyptiacus``.
+
+#. No utilizar los límites de los HSPs locales de BLAST como límites
+   biológicos exactos de exones.
+
+#. No sustituir la CDS derivada del TE por una porción del consenso
+   GOLEM-1p.
+
+#. No corregir manualmente frameshifts, indels, stops o bases ambiguas.
+
+#. No exigir que el stop terminal de ``Rousettus aegyptiacus`` esté
+   conservado exactamente en el extremo homólogo en todas las especies.
+
+#. Mantener el codón mixto HOST-TE únicamente en la CHIMERA completa.
+
+#. Para HOST-only y TE-only, excluir el codón mixto mediante la fase
+   específica de cada arquitectura.
+
+#. No incluir KATNAL1 en dN/dS multi-especie con el conjunto actual.
+
+#. Los casos que fallan la reconstrucción no deben llamarse
+   automáticamente pseudogenes.
+
+#. Conservar siempre los FASTA ``.all.fa`` además de los FASTA
+   ``.usable.fa``. Los primeros documentan la reconstrucción literal y los
+   segundos documentan el conjunto que pasó QC.
+
+
+26. Punto de reinicio rápido
+============================
+
+Si otra persona debe continuar este proyecto desde cero a partir del
+estado actual, debe comenzar aquí:
+
+.. code-block:: bash
+
+   cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
+
+   conda activate samtools_env
+
+   command -v mafft
+
+Si MAFFT está instalado:
+
+.. code-block:: bash
+
+   python3 \
+   ANALYSES/dNdS_FINAL/scripts/30_make_codon_alignments.py
+
+Después verificar que existan directorios como:
+
+.. code-block:: text
+
+   ANALYSES/dNdS_FINAL/alignments/FBXO3/
+   ANALYSES/dNdS_FINAL/alignments/TMPO/
+   ANALYSES/dNdS_FINAL/alignments/NCL/
+   ANALYSES/dNdS_FINAL/alignments/ZKSCAN7/
+   ANALYSES/dNdS_FINAL/alignments/ZFP28/
+
+El siguiente objetivo será ejecutar y documentar los modelos de dN/dS
+sobre los alineamientos codónicos validados.
+
+
+27. Resumen de recuperación
+===========================
+
+Al cierre de esta etapa:
+
+.. code-block:: text
+
+   Genomic architecture discovery: COMPLETE
+   Reference CDS validation:       COMPLETE
+   Literal genomic reconstruction: COMPLETE
+   Coding QC:                      COMPLETE
+   Selection FASTA generation:     COMPLETE
+
+   FBXO3:   6 usable species
+   TMPO:   15 usable species
+   NCL:    15 usable species
+   ZKSCAN7: 7 usable species
+   ZFP28:  15 usable species
+
+   KATNAL1:
+      descriptive only
+      insufficient intact multi-species ORFs for dN/dS
+
+   Protein alignment:              NOT YET RUN
+   Codon backtranslation:          NOT YET RUN
+   dN/dS models:                   NOT YET RUN
+
+El análisis debe reanudarse en la instalación/verificación de MAFFT y la
+ejecución de ``30_make_codon_alignments.py``.
+
