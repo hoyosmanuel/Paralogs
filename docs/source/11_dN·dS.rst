@@ -71,8 +71,12 @@ Para evitar que especies utilizadas durante exploraciones preliminares entren
 accidentalmente en el análisis final, se creó un manifiesto explícito.
 
 Este archivo contiene exclusivamente las especies incluidas en Supplementary File 1,
-Table 3, para las seis arquitecturas que actualmente tienen al menos tres especies
-potencialmente comparables.
+Table 3, para las seis arquitecturas que inicialmente tenían al menos tres especies
+con arquitectura genómica potencialmente comparable.
+
+La pertenencia a este manifiesto no implica que la CDS quimérica sea funcional.
+La reconstrucción y el QC pueden reducir posteriormente el número de especies
+utilizables para análisis de selección.
 
 .. code-block:: bash
 
@@ -129,13 +133,13 @@ potencialmente comparables.
    ZKSCAN7	Rhinolophus_pearsonii	Complete	NO	.
    ZKSCAN7	Rhinolophus_perniger_lanosus	Complete	NO	.
    ZKSCAN7	Rhinolophus_trifoliatus	Complete	NO	.
-   KATNAL1	Myotis_auriculus	Complete	NO	.
-   KATNAL1	Myotis_californicus	Complete	NO	.
-   KATNAL1	Myotis_daubentonii	Complete	YES	.
-   KATNAL1	Myotis_evotis	Complete	NO	.
-   KATNAL1	Myotis_myotis	Complete	NO	.
-   KATNAL1	Myotis_mystacinus	Complete	NO	.
-   KATNAL1	Myotis_volans	Complete	NO	.
+   KATNAL1	Myotis_auriculus	Complete	NO	FRAMESHIFT_CANDIDATE
+   KATNAL1	Myotis_californicus	Complete	NO	FRAMESHIFT_INTERNAL_STOP
+   KATNAL1	Myotis_daubentonii	Complete	YES	PASS_REFERENCE_ORF
+   KATNAL1	Myotis_evotis	Complete	NO	FRAMESHIFT_INTERNAL_STOP
+   KATNAL1	Myotis_myotis	Complete	NO	FRAMESHIFT_INTERNAL_STOP
+   KATNAL1	Myotis_mystacinus	Complete	NO	COMPENSATED_FRAMESHIFT_INTERNAL_STOPS
+   KATNAL1	Myotis_volans	Complete	NO	FRAMESHIFT_MULTIPLE_INTERNAL_STOPS
    ZFP28	Cynopterus_sphinx	High-confidence_complete	NO	.
    ZFP28	Desmodus_rotundus	Exon7_uncertain	NO	UNCERTAIN_EXON7_BOUNDARY
    ZFP28	Eonycteris_spelaea	High-confidence_complete	YES	.
@@ -249,7 +253,7 @@ se conocen simultáneamente:
 IV. Transcritos de referencia recuperados
 =========================================
 
-Se recuperaron localmente cinco transcritos completos:
+Se recuperaron localmente seis transcritos de referencia:
 
 ::
 
@@ -273,6 +277,10 @@ Se recuperaron localmente cinco transcritos completos:
        ZFP28_rAeg_SRR18652228_STRG.7996.1.fa
        ZFP28_rAeg_SRR18652228_STRG.7996.1.gtf
 
+   KATNAL1/
+       KATNAL1_mDau_ERR13757851_STRG.3154.1.fa
+       KATNAL1_STRG.3154.1_exons.tsv
+
 
 Las longitudes observadas fueron:
 
@@ -283,6 +291,7 @@ Las longitudes observadas fueron:
    TMPO      2610 nt
    NCL       3478 nt
    ZFP28     2746 nt
+   KATNAL1   5804 nt
 
 
 V. Inventariar ORFs en los transcritos de referencia
@@ -415,7 +424,7 @@ Ejecutar:
    python3 ANALYSES/dNdS_FINAL/scripts/01_inventory_reference_ORFs.py
 
 
-El inventario produjo 96 ORFs de al menos 50 aminoácidos.
+El inventario produjo 122 ORFs de al menos 50 aminoácidos.
 
 La ORF correcta para cada arquitectura se determinó comparando las proteínas
 resultantes con las proteínas quiméricas identificadas originalmente.
@@ -455,6 +464,11 @@ Las ORFs seleccionadas fueron:
      - 1245
      - 1173 nt
      - 390 aa
+   * - KATNAL1
+     - 1661
+     - 3475
+     - 1815 nt
+     - 604 aa
 
 
 VI. Definir dónde termina HOST y comienza TE
@@ -480,6 +494,7 @@ Se creó con:
    TMPO	Myotis_myotis	SRR18652219	STRG.7092.1	237	2468	649	237	648	649	2468	743
    NCL	Myotis_myotis	SRR18652219	STRG.3566.1	348	3233	1561	348	1560	1561	3233	961
    ZFP28	Rousettus_aegyptiacus	SRR18652228	STRG.7996.1	73	1245	884	73	883	884	1245	390
+   KATNAL1	Myotis_daubentonii	ERR13757851	STRG.3154.1	1661	3475	2808	1661	2807	2808	3475	604
    EOF
 
 
@@ -493,207 +508,67 @@ Se creó:
    ANALYSES/dNdS_FINAL/scripts/02_extract_reference_components.py
 
 
-La lógica del script consiste en:
+El script:
 
-1. leer ``reference_coding_segments.tsv``;
-2. localizar el FASTA correspondiente;
-3. cortar la región HOST;
-4. cortar la región TE;
-5. concatenarlas para reconstruir la CDS;
-6. traducir las tres secuencias;
-7. escribir FASTA independientes.
+1. lee ``reference_coding_segments.tsv``;
+2. localiza el FASTA de referencia correspondiente;
+3. extrae literalmente ``HOST CDS``, ``TE CDS`` y ``CHIMERA CDS``;
+4. conserva la CDS quimérica completa sin modificarla;
+5. traduce ``HOST`` y ``TE`` respetando la fase del codón de unión;
+6. escribe FASTA independientes para nucleótidos y proteínas.
+
+La frontera HOST--TE puede dividir un codón. En las seis referencias actuales,
+la longitud de ``HOST CDS`` deja fase 1:
+
+::
+
+   len(HOST) % 3 = 1
 
 
-Una implementación equivalente es:
+Por tanto, el codón de unión contiene:
+
+::
+
+   último nucleótido HOST
+   +
+   primeros 2 nucleótidos TE
+
+
+Ese codón mixto se conserva en ``CHIMERA CDS`` y en su traducción completa,
+pero no se asigna artificialmente a HOST ni a TE en los análisis por componente.
+
+Para las traducciones independientes:
+
+* HOST utiliza solamente codones completos derivados de HOST;
+* TE comienza después de los dos nucleótidos TE que participan en el codón mixto.
+
+La lógica de fase utilizada es:
 
 .. code-block:: python
 
-   from pathlib import Path
-   from Bio import SeqIO
-   from Bio.Seq import Seq
-   import csv
+   host_phase = len(host) % 3
+   host_pure_nt = len(host) - host_phase
+   host_for_translation = host[:host_pure_nt]
 
-   ROOT = Path(
-       "/Volumes/Expansion/project3/bat_HTF_genomic_analysis"
-   )
+   if host_phase == 0:
+       te_offset = 0
+   elif host_phase == 1:
+       te_offset = 2
+   elif host_phase == 2:
+       te_offset = 1
 
-   CONFIG = (
-       ROOT
-       / "ANALYSES"
-       / "dNdS_FINAL"
-       / "config"
-       / "reference_coding_segments.tsv"
-   )
-
-   TRANSCRIPTS = (
-       ROOT
-       / "ANALYSES"
-       / "dNdS_FINAL"
-       / "reference_transcripts"
-   )
-
-   OUTPUT = (
-       ROOT
-       / "ANALYSES"
-       / "dNdS_FINAL"
-       / "reference_cds"
-   )
-
-   with CONFIG.open() as handle:
-
-       reader = csv.DictReader(
-           handle,
-           delimiter="\t"
-       )
-
-       for row in reader:
-
-           architecture = row["Architecture"]
-
-           candidates = list(
-               (
-                   TRANSCRIPTS
-                   / architecture
-               ).glob("*.fa")
-           )
-
-           if len(candidates) != 1:
-
-               print(
-                   f"{architecture}: "
-                   f"expected one FASTA, found "
-                   f"{len(candidates)}"
-               )
-
-               continue
-
-           fasta = candidates[0]
-
-           record = next(
-               SeqIO.parse(
-                   fasta,
-                   "fasta"
-               )
-           )
-
-           transcript = str(
-               record.seq
-           ).upper()
-
-           host_start = int(
-               row["Host_CDS_start"]
-           )
-
-           host_end = int(
-               row["Host_CDS_end"]
-           )
-
-           te_start = int(
-               row["TE_CDS_start"]
-           )
-
-           te_end = int(
-               row["TE_CDS_end"]
-           )
-
-           host = transcript[
-               host_start - 1:host_end
-           ]
-
-           te = transcript[
-               te_start - 1:te_end
-           ]
-
-           chimera = host + te
-
-           outdir = (
-               OUTPUT
-               / architecture
-           )
-
-           outdir.mkdir(
-               parents=True,
-               exist_ok=True
-           )
-
-           def write_fasta(
-               filename,
-               header,
-               sequence
-           ):
-
-               with (
-                   outdir
-                   / filename
-               ).open("w") as out:
-
-                   out.write(
-                       f">{header}\n"
-                   )
-
-                   out.write(
-                       f"{sequence}\n"
-                   )
-
-           write_fasta(
-               "host_cds.fa",
-               f"{architecture}|HOST",
-               host
-           )
-
-           write_fasta(
-               "te_cds.fa",
-               f"{architecture}|TE",
-               te
-           )
-
-           write_fasta(
-               "chimera_cds.fa",
-               f"{architecture}|CHIMERA",
-               chimera
-           )
-
-           write_fasta(
-               "host_protein.fa",
-               f"{architecture}|HOST",
-               str(
-                   Seq(host).translate()
-               )
-           )
-
-           write_fasta(
-               "te_protein.fa",
-               f"{architecture}|TE",
-               str(
-                   Seq(te).translate()
-               )
-           )
-
-           write_fasta(
-               "chimera_protein.fa",
-               f"{architecture}|CHIMERA",
-               str(
-                   Seq(chimera).translate()
-               )
-           )
-
-           print(
-               architecture,
-               f"HOST={len(host)}",
-               f"TE={len(te)}",
-               f"CHIMERA={len(chimera)}",
-           )
+   te_for_translation = te[te_offset:]
 
 
 Ejecutar:
 
 .. code-block:: bash
 
-   python3 
+   python3 \
    ANALYSES/dNdS_FINAL/scripts/02_extract_reference_components.py
 
 
-Los resultados obtenidos fueron:
+Resultados de las referencias:
 
 ::
 
@@ -726,6 +601,28 @@ Los resultados obtenidos fueron:
        TE       362 nt
        CHIMERA  1173 nt
        Protein  390 aa
+
+   KATNAL1
+       HOST     1147 nt
+       TE       668 nt
+       CHIMERA  1815 nt
+       Protein  604 aa
+
+
+Las comprobaciones de longitud de proteína confirmaron el comportamiento esperado
+de la fase. Por ejemplo:
+
+::
+
+   FBXO3
+       HOST protein     119 aa
+       TE protein       433 caracteres
+       CHIMERA protein  553 caracteres = 552 aa + stop
+
+   KATNAL1
+       HOST protein     382 aa
+       TE protein       222 caracteres
+       CHIMERA protein  605 caracteres = 604 aa + stop
 
 
 VIII. Caso especial de KATNAL1
@@ -761,7 +658,7 @@ Primero localizar el genoma:
 
 .. code-block:: bash
 
-   ROOT="/Volumes/Expansion/project3"
+   ROOT="/Volumes/Expansion/project3/bat_HTF_genomic_analysis"
 
    find "$ROOT/SPECIES" 
    -type f 
@@ -773,9 +670,9 @@ Definir la ruta:
 
 .. code-block:: bash
 
-   ROOT="/Volumes/Expansion/project3"
+   ROOT="/Volumes/Expansion/project3/bat_HTF_genomic_analysis"
 
-   PROJ="$ROOT/bat_HTF_genomic_analysis"
+   PROJ="$ROOT"
 
    OUT="$PROJ/ANALYSES/dNdS_FINAL/reference_transcripts/KATNAL1"
 
@@ -1418,57 +1315,112 @@ Este código puede ejecutarse directamente desde Bash mediante:
    PY
 
 
-XV. Estado actual de FBXO3
-==========================
+XV. Estado final de FBXO3 para reconstrucción
+=============================================
 
-Los exones 2 y 3 ya están definidos de manera independiente por el análisis original
-de FBXO3.
+La reconstrucción multi-especie de FBXO3 quedó cerrada para las seis especies
+del manifiesto final.
 
-El exon 4 derivado del TE también puede localizarse utilizando el locus quimérico y
-la posición de ``RhiSin-1.24``.
-
-El punto que todavía debe resolverse cuidadosamente es el exon 1 en algunas especies.
-
-Actualmente:
+Se utilizó:
 
 ::
 
-   Rhinolophus ferrumequinum
-       exon1 identificado
-
-   Rhinolophus hipposideros
-       exon1 identificado
-
-   Rhinolophus affinis
-       candidato de exon1 identificado
-
-   Rhinolophus pearsonii
-       candidato de exon1 identificado
-
-   Rhinolophus sinicus
-       candidato de exon1 identificado
-
-   Rhinolophus trifoliatus
-       exon1 no recuperado con el BLAST actual
+   ANALYSES/dNdS_FINAL/scripts/04_reconstruct_FBXO3_cds.py
 
 
-La ausencia de un hit de exon 1 en ``R. trifoliatus`` **no demuestra todavía que el
-exon esté ausente**.
+Las coordenadas finales utilizadas fueron:
 
-Puede representar:
+.. list-table::
+   :header-rows: 1
 
-* divergencia suficiente para impedir su recuperación con el probe actual;
-* degradación del exon;
-* pérdida real del exon.
+   * - Especie
+     - Strand
+     - Exon 1 CDS
+     - Exon 2
+     - Exon 3
+     - TE CDS
+   * - R. affinis
+     - +
+     - 24007135--24007238
+     - 24009684--24009773
+     - 24012407--24012570
+     - 24014103--24015403
+   * - R. ferrumequinum
+     - -
+     - 66442037--66442140
+     - 66437735--66437824
+     - 66434946--66435109
+     - 66432126--66433426
+   * - R. hipposideros
+     - +
+     - 23133778--23133881
+     - 23138058--23138147
+     - 23140786--23140949
+     - 23142488--23143788
+   * - R. pearsonii
+     - +
+     - 23301453--23301556
+     - 23305777--23305866
+     - 23308274--23308437
+     - 23309973--23311273
+   * - R. sinicus
+     - +
+     - 23091947--23092050
+     - 23096298--23096387
+     - 23099038--23099201
+     - 23100718--23102018
+   * - R. trifoliatus
+     - -
+     - 169437511--169437614
+     - 169436228--169436317
+     - 169432523--169432686
+     - 169429697--169430997
 
-Por ahora:
+
+En las seis especies se obtuvo:
 
 ::
 
-   no se sabe
+   exon1 CDS = 104 nt
+   exon2     = 90 nt
+   exon3     = 164 nt
+   TE CDS    = 1301 nt
+
+   HOST      = 358 nt
+   CHIMERA   = 1659 nt
+   Protein   = 552 aa
 
 
-y no se debe reconstruir artificialmente.
+El codón de unión HOST--TE conserva fase 1 en las seis reconstrucciones.
+
+El reporte:
+
+::
+
+   ANALYSES/dNdS_FINAL/results/FBXO3_QC.tsv
+
+
+registró en las seis especies:
+
+::
+
+   ambiguous bases = 0
+   length mod 3    = 0
+   start codon     = ATG
+   terminal stop   = YES
+   internal stops  = 0
+   QC_status       = PASS
+
+
+Por tanto:
+
+::
+
+   FBXO3
+       n_table         = 6
+       n_reconstructed = 6
+       n_usable        = 6
+       prepare_for_selection = YES
 
 
 XVI. Archivos de entrada disponibles para las otras arquitecturas
@@ -1580,7 +1532,173 @@ El TE correspondiente es:
    GOLEM-1p
 
 
-XVII. Principio para la reconstrucción multi-especie
+XVII. Estado multi-especie de KATNAL1
+=========================================
+
+KATNAL1 requiere distinguir explícitamente entre:
+
+* conservación de la arquitectura genómica;
+* conservación de una ORF quimérica intacta.
+
+La arquitectura ``KATNAL1--hAT1_mMyo`` se recuperó en siete especies:
+
+::
+
+   Myotis auriculus
+   Myotis californicus
+   Myotis daubentonii
+   Myotis evotis
+   Myotis myotis
+   Myotis mystacinus
+   Myotis volans
+
+
+En las siete especies se recuperaron al 100 % los exones HOST 1--9.
+La región codificante HOST corresponde a:
+
+::
+
+   exon 2:
+       bases 15--176 = HOST CDS
+
+   exons 3--9:
+       completos = HOST CDS
+
+
+La referencia de ``Myotis daubentonii`` tiene:
+
+::
+
+   HOST CDS = 1147 nt
+   TE CDS   = 668 nt
+   CHIMERA  = 1815 nt
+   Protein  = 604 aa
+
+
+El TE derivado de ``hAT1_mMyo`` comienza en el exon terminal.
+Para evaluar si la región TE codificante homóloga ``q1--668`` conservaba
+el marco en cada especie se utilizaron:
+
+::
+
+   ANALYSES/dNdS_FINAL/scripts/05_summarize_KATNAL1_final_loci.py
+   ANALYSES/dNdS_FINAL/scripts/06_project_KATNAL1_hAT1_CDS_boundary.py
+   ANALYSES/dNdS_FINAL/scripts/06b_audit_KATNAL1_TE_CDS_indels.py
+   ANALYSES/dNdS_FINAL/scripts/06c_inspect_KATNAL1_frameshifts.py
+
+
+La región ``q1--668`` produjo:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Especie
+     - TE homóloga
+     - Indels dentro de q1--668
+     - Estado codificante
+   * - M. auriculus
+     - 669 nt
+     - +1 nt
+     - FRAMESHIFT
+   * - M. californicus
+     - 669 nt
+     - +1 nt
+     - FRAMESHIFT + INTERNAL_STOP
+   * - M. daubentonii
+     - 668 nt
+     - ninguno
+     - PASS
+   * - M. evotis
+     - 669 nt
+     - +1 nt
+     - FRAMESHIFT + INTERNAL_STOP
+   * - M. myotis
+     - 669 nt
+     - +1 nt
+     - FRAMESHIFT + INTERNAL_STOP
+   * - M. mystacinus
+     - 668 nt
+     - +1 nt / -1 nt
+     - COMPENSATED_FRAMESHIFT + INTERNAL_STOPS
+   * - M. volans
+     - 687 nt
+     - +19 nt
+     - FRAMESHIFT + MULTIPLE_INTERNAL_STOPS
+
+
+La traducción literal de la región TE confirmó:
+
+::
+
+   Myotis auriculus
+       no stop dentro del tramo homólogo,
+       pero el marco está desplazado y se pierde el stop terminal de referencia
+
+   Myotis californicus
+       primer stop interno = aa 25
+
+   Myotis daubentonii
+       stop terminal correcto = aa 222
+
+   Myotis evotis
+       primer stop interno = aa 210
+
+   Myotis myotis
+       primer stop interno = aa 152
+
+   Myotis mystacinus
+       primer stop interno = aa 98
+
+   Myotis volans
+       primer stop interno = aa 51
+
+
+Interpretación
+--------------
+
+La presencia de los nueve exones HOST y del componente ``hAT1_mMyo`` demuestra
+conservación de la arquitectura genómica en las siete especies estudiadas.
+
+Sin embargo, solamente ``Myotis daubentonii`` conserva una ORF quimérica
+intacta equivalente a la referencia.
+
+Las otras seis especies presentan deterioro de la región codificante mediante
+indels que alteran temporal o permanentemente el marco de lectura y, en cinco
+casos, codones de parada prematuros.
+
+Estos indels **no se corrigen artificialmente**.
+
+Con los ensamblajes actuales no se puede distinguir de manera definitiva si
+cada indel representa una variante biológica real o un error local de
+ensamblaje. Por tanto, la clasificación describe literalmente la secuencia
+genómica disponible.
+
+
+Consecuencia para dN/dS
+-----------------------
+
+Para la CDS quimérica completa:
+
+::
+
+   KATNAL1
+       n_table = 7
+       intact_chimeric_ORF = 1
+       minimum_required = 3
+       prepare_chimera_for_selection = NO
+
+
+KATNAL1 se conserva en el conjunto descriptivo de arquitecturas, pero no pasa
+a análisis ``dN/dS`` de la quimera con los datos actuales.
+
+Las siete reconstrucciones deben conservarse en archivos ``all``.
+Solamente las secuencias que pasen QC deben entrar en archivos ``usable``.
+
+La degradación de TE no elimina automáticamente un segmento HOST válido.
+El componente HOST podrá evaluarse separadamente cuando corresponda.
+
+
+XVIII. Principio para la reconstrucción multi-especie
 ====================================================
 
 Para cada arquitectura, el procedimiento será:
@@ -1612,7 +1730,7 @@ Para cada arquitectura, el procedimiento será:
    10. realizar QC
 
 
-XVIII. Estructura de salida
+XIX. Estructura de salida
 ===========================
 
 Para cada arquitectura se generará:
@@ -1655,7 +1773,7 @@ Los archivos ``all`` conservarán las reconstrucciones literales.
 Los archivos ``usable`` contendrán solamente las secuencias que pasen QC.
 
 
-XIX. Control de calidad
+XX. Control de calidad
 =======================
 
 Cada componente debe evaluarse independientemente.
@@ -1675,6 +1793,8 @@ Los estados de QC previstos son:
    MISSING_TE_CODING_REGION
 
    FRAMESHIFT
+
+   COMPENSATED_FRAMESHIFT
 
    INTERNAL_STOP
 
@@ -1721,12 +1841,17 @@ El reporte final tendrá como mínimo:
    Exclusion_reason
 
 
-XX. Regla para pasar al análisis de dN/dS
+XXI. Regla para pasar al análisis de dN/dS
 =========================================
 
-Todavía no se realizará ningún análisis de selección.
+No se realizará análisis de selección para una arquitectura/componente hasta
+que su reconstrucción multi-especie y QC estén cerrados.
 
-Primero se generará:
+FBXO3 ya cumple esta condición para la quimera completa.
+KATNAL1 no la cumple para la quimera completa porque solamente una especie
+conserva una ORF intacta.
+
+El resumen se almacenará en:
 
 ::
 
