@@ -881,3 +881,629 @@ Expected result::
 
    grep -h 'ZFP28_CHIMERIC_' results/ZFP28_signature_*.tsv \
    | column -t
+
+
+8. Validación del sitio aceptor de splicing del exón 7
+------------------------------------------------------
+
+Después de identificar los loci candidatos completos de ZFP28–GOLEM-1p,
+se realizó una validación adicional del límite 5′ del exón 7 derivado
+del elemento transponible.
+
+El objetivo fue determinar si la secuencia inmediatamente anterior al
+exón 7 conservaba el dinucleótido aceptor canónico ``AG`` en orientación
+transcripcional.
+
+El análisis se aplicó únicamente a los loci previamente clasificados como
+``ZFP28_CHIMERIC_COMPLETE``.
+
+Crear el script de validación:
+
+.. code-block:: bash
+
+   nano scripts/03_validate_ZFP28_exon7.py
+
+Pegar el siguiente código:
+
+.. code-block:: python
+
+   #!/usr/bin/env python3
+
+   from pathlib import Path
+   import subprocess
+   import csv
+
+
+   # ============================================================
+   # RUTAS
+   # ============================================================
+
+   ROOT = Path(__file__).resolve().parent.parent
+   PROJECT = ROOT.parent.parent
+
+   SPECIES_ROOT = PROJECT / "SPECIES"
+   RESULTS = ROOT / "results"
+   INTERMEDIATE = ROOT / "intermediate"
+
+   OUT = RESULTS / "ZFP28_exon7_splice_validation.tsv"
+
+
+   # ============================================================
+   # FUNCIONES
+   # ============================================================
+
+   def revcomp(seq):
+       """
+       Obtiene el complemento reverso de una secuencia de ADN.
+       Se utiliza para expresar las bases en orientación transcripcional
+       cuando el locus está localizado en la hebra negativa.
+       """
+
+       comp = str.maketrans(
+           "ACGTNacgtn",
+           "TGCANtgcan"
+       )
+
+       return seq.translate(comp)[::-1]
+
+
+   def get_seq(fasta, scaffold, start, end):
+       """
+       Extrae una región genómica usando samtools faidx.
+
+       Las coordenadas utilizadas son 1-based e inclusivas.
+       """
+
+       if start < 1:
+           return ""
+
+       fai = Path(str(fasta) + ".fai")
+
+       if not fai.exists():
+
+           subprocess.run(
+               ["samtools", "faidx", str(fasta)],
+               check=True,
+               stdout=subprocess.DEVNULL
+           )
+
+       region = f"{scaffold}:{start}-{end}"
+
+       p = subprocess.run(
+           [
+               "samtools",
+               "faidx",
+               str(fasta),
+               region
+           ],
+           check=True,
+           capture_output=True,
+           text=True
+       )
+
+       lines = p.stdout.strip().splitlines()
+
+       if len(lines) < 2:
+           return ""
+
+       return "".join(lines[1:]).upper()
+
+
+   # ============================================================
+   # RECORRER LOS RESULTADOS DE ZFP28
+   # ============================================================
+
+   rows_out = []
+
+   for result_file in sorted(
+       RESULTS.glob("ZFP28_signature_*.tsv")
+   ):
+
+       species = result_file.stem.replace(
+           "ZFP28_signature_",
+           ""
+       )
+
+       # --------------------------------------------------------
+       # Seleccionar únicamente las arquitecturas completas
+       # --------------------------------------------------------
+
+       with open(result_file) as fh:
+
+           reader = csv.DictReader(
+               fh,
+               delimiter="\t"
+           )
+
+           complete_rows = [
+               r for r in reader
+               if r["Status"] ==
+               "ZFP28_CHIMERIC_COMPLETE"
+           ]
+
+       if not complete_rows:
+           continue
+
+
+       # --------------------------------------------------------
+       # Localizar el genoma correspondiente
+       # --------------------------------------------------------
+
+       species_dir = SPECIES_ROOT / species
+
+       genomes = list(
+           species_dir.glob("*.fa")
+       )
+
+       if len(genomes) != 1:
+
+           print(
+               f"OMITIR {species}: "
+               f"se esperaba exactamente un FASTA genómico"
+           )
+
+           continue
+
+       genome = genomes[0]
+
+
+       # --------------------------------------------------------
+       # Abrir los resultados BLAST originales de GOLEM-1p
+       # --------------------------------------------------------
+
+       blast_file = (
+           INTERMEDIATE /
+           species /
+           f"ZFP28_GOLEM_matches_{species}.tsv"
+       )
+
+       if not blast_file.exists():
+
+           print(
+               f"OMITIR {species}: "
+               f"no se encontró el archivo BLAST de GOLEM"
+           )
+
+           continue
+
+
+       blast_hits = []
+
+       with open(blast_file) as fh:
+
+           for line in fh:
+
+               if not line.strip():
+                   continue
+
+               f = line.rstrip().split("\t")
+
+               if len(f) != 12:
+                   continue
+
+               (
+                   qseqid,
+                   sseqid,
+                   pident,
+                   length,
+                   qlen,
+                   qstart,
+                   qend,
+                   sstart,
+                   send,
+                   evalue,
+                   bitscore,
+                   qcov
+               ) = f
+
+               sstart = int(sstart)
+               send = int(send)
+
+               blast_hits.append({
+
+                   "qseqid": qseqid,
+                   "scaffold": sseqid,
+
+                   "pident": float(pident),
+                   "length": int(length),
+
+                   "qlen": int(qlen),
+                   "qstart": int(qstart),
+                   "qend": int(qend),
+
+                   "sstart": sstart,
+                   "send": send,
+
+                   "start": min(sstart, send),
+                   "end": max(sstart, send),
+
+                   "strand":
+                       "+" if sstart <= send else "-",
+
+                   "qcov": float(qcov),
+                   "bitscore": float(bitscore)
+               })
+
+
+       # ========================================================
+       # VALIDAR CADA ARQUITECTURA COMPLETA
+       # ========================================================
+
+       for r in complete_rows:
+
+           scaffold = r["Scaffold"]
+           strand = r["Strand"]
+
+           golem_start = int(
+               r["GOLEM_start"]
+           )
+
+           golem_end = int(
+               r["GOLEM_end"]
+           )
+
+
+           # ----------------------------------------------------
+           # Recuperar exactamente el hit de GOLEM utilizado
+           # por el detector de arquitectura
+           # ----------------------------------------------------
+
+           candidates = [
+
+               h for h in blast_hits
+
+               if h["scaffold"] == scaffold
+               and h["strand"] == strand
+               and h["start"] == golem_start
+               and h["end"] == golem_end
+           ]
+
+
+           if not candidates:
+
+               print(
+                   f"ADVERTENCIA {species}: "
+                   f"no fue posible recuperar el hit GOLEM "
+                   f"{scaffold}:{golem_start}-{golem_end}"
+               )
+
+               continue
+
+
+           hit = max(
+               candidates,
+               key=lambda x: x["bitscore"]
+           )
+
+
+           qlen = hit["qlen"]
+           qstart = hit["qstart"]
+           qend = hit["qend"]
+
+           sstart = hit["sstart"]
+           send = hit["send"]
+
+
+           # ----------------------------------------------------
+           # Reconstruir las coordenadas esperadas del exón 7
+           #
+           # El BLAST puede no comenzar exactamente en el
+           # nucleótido 1 de la sonda, por lo que se corrigen
+           # los extremos no alineados utilizando qstart/qend.
+           # ----------------------------------------------------
+
+           if strand == "+":
+
+               exon7_start = (
+                   sstart -
+                   (qstart - 1)
+               )
+
+               exon7_end = (
+                   send +
+                   (qlen - qend)
+               )
+
+
+               # En strand positivo, el aceptor de splicing
+               # se encuentra inmediatamente antes del inicio
+               # del exón 7.
+
+               genomic_acceptor = get_seq(
+                   genome,
+                   scaffold,
+                   exon7_start - 2,
+                   exon7_start - 1
+               )
+
+               transcript_acceptor = (
+                   genomic_acceptor
+               )
+
+
+           else:
+
+               # En strand negativo, qstart corresponde
+               # al extremo genómico de coordenada mayor.
+
+               exon7_end = (
+                   sstart +
+                   (qstart - 1)
+               )
+
+               exon7_start = (
+                   send -
+                   (qlen - qend)
+               )
+
+
+               # En orientación transcripcional, la región
+               # inmediatamente anterior al exón 7 se encuentra
+               # hacia coordenadas genómicas mayores.
+
+               genomic_acceptor = get_seq(
+                   genome,
+                   scaffold,
+                   exon7_end + 1,
+                   exon7_end + 2
+               )
+
+               transcript_acceptor = revcomp(
+                   genomic_acceptor
+               )
+
+
+           # ----------------------------------------------------
+           # Clasificar el sitio aceptor
+           # ----------------------------------------------------
+
+           if transcript_acceptor == "AG":
+
+               acceptor_status = (
+                   "CANONICAL_AG"
+               )
+
+           else:
+
+               acceptor_status = (
+                   "NONCANONICAL"
+               )
+
+
+           # ----------------------------------------------------
+           # Guardar resultados
+           # ----------------------------------------------------
+
+           rows_out.append({
+
+               "Species":
+                   species,
+
+               "Genome":
+                   genome.name,
+
+               "Scaffold":
+                   scaffold,
+
+               "Strand":
+                   strand,
+
+               "Host_exons":
+                   r["Exons_found"],
+
+               "Exon7_start_predicted":
+                   exon7_start,
+
+               "Exon7_end_predicted":
+                   exon7_end,
+
+               "GOLEM_qstart":
+                   qstart,
+
+               "GOLEM_qend":
+                   qend,
+
+               "GOLEM_qcov":
+                   hit["qcov"],
+
+               "GOLEM_identity":
+                   hit["pident"],
+
+               "Acceptor_genomic_2bp":
+                   genomic_acceptor,
+
+               "Acceptor_transcript_2bp":
+                   transcript_acceptor,
+
+               "Acceptor_status":
+                   acceptor_status
+           })
+
+
+   # ============================================================
+   # ESCRIBIR LA TABLA FINAL
+   # ============================================================
+
+   header = [
+
+       "Species",
+       "Genome",
+       "Scaffold",
+       "Strand",
+
+       "Host_exons",
+
+       "Exon7_start_predicted",
+       "Exon7_end_predicted",
+
+       "GOLEM_qstart",
+       "GOLEM_qend",
+
+       "GOLEM_qcov",
+       "GOLEM_identity",
+
+       "Acceptor_genomic_2bp",
+       "Acceptor_transcript_2bp",
+
+       "Acceptor_status"
+   ]
+
+
+   with open(OUT, "w") as out:
+
+       out.write(
+           "\t".join(header) + "\n"
+       )
+
+       for r in rows_out:
+
+           out.write(
+               "\t".join(
+                   str(r[x])
+                   for x in header
+               )
+               + "\n"
+           )
+
+
+   print()
+
+   print(
+       f"Loci completos validados: "
+       f"{len(rows_out)}"
+   )
+
+   print(
+       f"Archivo de salida: {OUT}"
+   )
+
+
+Dar permisos de ejecución:
+
+.. code-block:: bash
+
+   chmod +x scripts/03_validate_ZFP28_exon7.py
+
+
+Ejecutar el análisis:
+
+.. code-block:: bash
+
+   python3 scripts/03_validate_ZFP28_exon7.py
+
+
+El análisis produjo:
+
+.. code-block:: text
+
+   Validated complete loci: 24
+
+   Output:
+   results/ZFP28_exon7_splice_validation.tsv
+
+
+9. Verificar los controles positivos
+------------------------------------
+
+Antes de interpretar el resto de las especies, se verificaron los dos
+controles positivos conocidos.
+
+.. code-block:: bash
+
+   {
+   head -1 results/ZFP28_exon7_splice_validation.tsv
+
+   grep -E '^(Eonycteris_spelaea|Rousettus_aegyptiacus)' \
+   results/ZFP28_exon7_splice_validation.tsv
+
+   } | column -t
+
+
+Los dos controles mostraron un sitio aceptor ``AG`` canónico:
+
+.. code-block:: text
+
+   Eonycteris_spelaea
+   GOLEM coverage = 100%
+   GOLEM identity = 100%
+   splice acceptor = AG
+   CANONICAL_AG
+
+   Rousettus_aegyptiacus
+   GOLEM coverage = 99%
+   GOLEM identity = 94.313%
+   splice acceptor = AG
+   CANONICAL_AG
+
+
+10. Examinar todos los loci completos
+-------------------------------------
+
+Mostrar la tabla completa:
+
+.. code-block:: bash
+
+   column -t \
+   results/ZFP28_exon7_splice_validation.tsv
+
+
+Examinar específicamente los loci de *Rhinolophus*:
+
+.. code-block:: bash
+
+   {
+   head -1 results/ZFP28_exon7_splice_validation.tsv
+
+   grep '^Rhinolophus_' \
+   results/ZFP28_exon7_splice_validation.tsv
+
+   } | column -t
+
+
+11. Resumir la conservación del sitio aceptor
+---------------------------------------------
+
+Contar los sitios aceptores canónicos y no canónicos:
+
+.. code-block:: bash
+
+   awk -F'\t' '
+   NR > 1 {
+       count[$NF]++
+   }
+
+   END {
+       for (x in count)
+           print x, count[x]
+   }
+   ' results/ZFP28_exon7_splice_validation.tsv
+
+
+El resultado fue:
+
+.. code-block:: text
+
+   CANONICAL_AG 22
+   NONCANONICAL 2
+
+
+Por lo tanto, de los 24 loci inicialmente clasificados como
+``ZFP28_CHIMERIC_COMPLETE``, 22 conservaron el sitio aceptor canónico
+``AG`` inmediatamente antes del exón 7 derivado de GOLEM-1p.
+
+Los dos casos que no conservaron un sitio aceptor canónico fueron:
+
+* *Desmodus rotundus*
+* *Rhinolophus foetidus*
+
+En *Desmodus rotundus*, la alineación de GOLEM-1p comenzó en la posición
+36 de la sonda, por lo que el límite 5′ del exón 7 fue parcialmente
+inferido.
+
+En *Rhinolophus foetidus*, la alineación comenzó en la posición 344 y
+recuperó únicamente el 81% de la sonda GOLEM-1p, indicando una
+degradación considerable del extremo 5′ del componente derivado del TE.
+
+Estos dos loci se conservaron como arquitecturas host completas con un
+exón 7 degradado o incierto, pero no fueron incluidos entre los
+positivos completos de alta confianza.
