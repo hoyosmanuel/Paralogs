@@ -193,6 +193,9 @@ Los 23 candidatos fuertes fueron:
 II. AUDITORIA DE NCL
 ==================================
 
+1) Ver si metí la pata
+--------------------------------------------------------------------
+
 como no encontré a Vespertilio (que corre en sentido contrario) murinus muy seguramente cometí un error.
 así que vamos a probar de nuevo.
 
@@ -381,3 +384,190 @@ RUM!
 .. code-block:: bash
 
     python3 auditar_NCL.py --root ../../..
+
+2) Ver Verpetilio murinus
+--------------------------------------------------------------------
+
+la auditoria salió bien, asi que voy a correr:
+
+.. code-block:: bash
+
+    cd /Volumes/Expansion/project3/bat_HTF_genomic_analysis
+    
+    mkdir -p ANALYSES/NCL/sequences/Vespertilio_murinus
+    
+    GENOME="SPECIES/Vespertilio_murinus/mVesMur1.1.pri.fa"
+    OUT="ANALYSES/NCL/sequences/Vespertilio_murinus/NCL_786044_blocks.fa"
+    
+    : > "$OUT"
+    
+    while read -r exon start end; do
+        seq=$(samtools faidx "$GENOME" "OZ004711:${start}-${end}" |
+              tail -n +2 |
+              tr -d '\n' |
+              tr 'ACGTacgt' 'TGCAtgca' |
+              rev)
+    
+        printf ">Vespertilio_murinus_NCL_block%s\n%s\n" \
+            "$exon" "$seq" >> "$OUT"
+    
+    done <<'EOF'
+    1 64537101 64537118
+    2 64534976 64535083
+    3 64532829 64533132
+    4 64532275 64532445
+    5 64531425 64531511
+    6 64530361 64530499
+    7 64528873 64528997
+    8 64528112 64528235
+    EOF
+    
+    cat "$OUT"
+
+La respuesta es esta:
+
+.. code-block:: bash
+
+    >Vespertilio_murinus_NCL_block1
+    ATAAGAGGTCTTCCTCGC
+    >Vespertilio_murinus_NCL_block2
+    GCTAGTAAAAATCAAGTTGATCCCAAGAAAATGGCTTCTCCAAAGGAGGTAGAAGATAGTGAAGATGAGGAAATGTCAGATGGAGAAGATGAAAGCAGTGGAGAAGAG
+    >Vespertilio_murinus_NCL_block3
+    GTTGTCATTCCTCAGAGAAAAGGAAAGAAGGCTACCACAACTCCAGGAAAGAAGGTGATGTTTTCTCCAACAGAAAAACTTGCAGTTGTCACTCCTGGCAAAGAGGCAGAAATTACACTAGCCAAAGCCATAGCAACTCCTGGTAAGAAGAAAGCAGCCACCCAAGACAAGGGAGCAAGGAATGACAAGAATGCCAAGAAGGAAGACAGCGACGAGGAAGATGAGGATGAATTTGAGCCAGCAGTGATGAAGGCTGCTGCTGCTGTCCCTTTCTTGGATGATGAGGATGATGACAAAGAAGATG
+    >Vespertilio_murinus_NCL_block4
+    ACTCTGAAGAAGAACCTATGGAGATTGCACCAGCCAAAGGCAAGAAAGCTCCTGTAAAAGCTGTTCCTGTGAAGGCCAAGAGCACAgaaaatgaagacaaagagaatgaagacaaagaggataaagatgaagtggaggtggaggtagaggtggagttggaggaagaggAAG
+    >Vespertilio_murinus_NCL_block5
+    ATCATATTAAAAAAACACCTTATAAACAGAAGAAGAAAATGACCAAACAGAAGGCTTCCCCTGAAACCAAAAAACAGAAATTAGAAG
+    >Vespertilio_murinus_NCL_block6
+    CTGAACCACCTGTAACTTTCAAACTGTTTGTTGGAAACCTGAATTTCAACAAAACTGCTGCTGAACTAAAAACTGGTCTCAGGGAATTTTTTGCTAAAAATGAACTCACAGTTGTTGGTGTCAGAGTCAGCTCATCCAG
+    >Vespertilio_murinus_NCL_block7
+    GAGATTTGGTTATGTGAATTTTAAATCTGTTGACGATCAGGAAAAAGCCCTGGAACTCAGTGAGACAAAGGTCCTTGGGTATGAAATTAAACTGAAGAAACCAAAGGGAAAGGAAACAAAGAAAG
+    >Vespertilio_murinus_NCL_block8
+    ATCGAAATGCCAAAACACTTTTGATCAAGAACTTGCCTAGCAAGGTCACCGAGCATGAACTAAAGGAAGTGTTTGAGGATGCTTTTCAAATCAGATTTCTGGGCAATGATGAGATAAGTAAAAG
+    (samtools_env) manuelhoyos@MacBookPro bat_HTF_genomic_analysis %
+
+Tenemos los exones de NCL pero solo 8 así que busquemos el noveno:
+
+.. code-block:: bash
+
+    find . -type f \( \
+      -iname '*NCL*block*.fa' -o \
+      -iname '*NCL*exon*.fa' \
+    \) | head -80
+
+
+.. code-block:: bash
+
+    ./NCL_EXON1_9blocks.fa
+    ./NCL_EXON1_9blocks_CDS.fa
+    ./ANALYSES/NCL/sequences/NCL_host_exon_probes.fa
+    ./ANALYSES/NCL/sequences/Vespertilio_murinus/NCL_786044_blocks.fa
+    ./ANALYSES/dNdS_FINAL/reference_probes/NCL/NCL_CDS_exon2.fa
+    ./ANALYSES/dNdS_FINAL/reference_probes/NCL/NCL_CDS_exon3.fa
+    ./ANALYSES/dNdS_FINAL/reference_probes/NCL/NCL_CDS_exon4.fa
+    ./ANALYSES/dNdS_FINAL/reference_probes/NCL/NCL_CDS_exon5.fa
+    ./ANALYSES/dNdS_FINAL/reference_probes/NCL/NCL_CDS_exon6.fa
+    ./ANALYSES/dNdS_FINAL/reference_probes/NCL/NCL_CDS_exon7.fa
+    ./ANALYSES/dNdS_FINAL/reference_probes/NCL/NCL_CDS_exon8.fa
+    ./ANALYSES/dNdS_FINAL/reference_probes/NCL/NCL_CDS_exon9.fa
+
+.. code-block:: bash
+
+    grep '^>' ANALYSES/NCL/sequences/NCL_host_exon_probes.fa
+
+.. code-block:: bash
+
+    >NCL_exon1_match
+    >NCL_exon2_match
+    >NCL_exon3_match
+    >NCL_exon4_match
+    >NCL_exon5_match
+    >NCL_exon6_match
+    >NCL_exon7_match
+    >NCL_exon8_match
+    >NCL_exon9_match
+
+extraer la region del paralogo:
+
+.. code-block:: bash
+
+    samtools faidx \
+      SPECIES/Vespertilio_murinus/mVesMur1.1.pri.fa \
+      OZ004711:64523000-64542000 \
+      > ANALYSES/NCL/sequences/Vespertilio_murinus/NCL_786044_extended.fa
+
+Buscar los 9 exones con BLAST:
+
+    blastn \
+      -query ANALYSES/NCL/sequences/NCL_host_exon_probes.fa \
+      -subject ANALYSES/NCL/sequences/Vespertilio_murinus/NCL_786044_extended.fa \
+      -task blastn \
+      -word_size 7 \
+      -dust no \
+      -evalue 1e-3 \
+      -outfmt '6 qseqid pident length qlen qstart qend sstart send evalue bitscore'
+
+Ahí están los exones:
+
+.. code-block:: bash
+
+    NCL_exon1_match	80.503	318	317	1	313	14261	13968	2.66e-82	294
+    NCL_exon2_match	88.496	113	114	2	114	12083	11977	3.49e-37	142
+    NCL_exon3_match	71.968	371	376	1	371	10133	9841	2.79e-70	253
+    NCL_exon4_match	94.643	112	120	1	112	9446	9335	1.80e-47	176
+    NCL_exon5_match	96.552	87	87	1	87	8512	8426	7.38e-38	144
+    NCL_exon6_match	98.561	139	139	1	139	7500	7362	1.74e-67	242
+    NCL_exon7_match	99.200	125	125	1	125	5998	5874	5.04e-61	222
+    NCL_exon8_match	97.561	123	124	2	124	5235	5113	3.15e-57	209
+    NCL_exon9_match	98.089	157	158	2	158	1250	1094	1.44e-75	270
+
+
+
+3) Busquemos a Charlie8 despues del 9 exon
+--------------------------------------------------------------------
+
+.. code-block:: bash
+
+    GENOME="SPECIES/Vespertilio_murinus/mVesMur1.1.pri.fa"
+    OUTDIR="ANALYSES/NCL/sequences/Vespertilio_murinus"
+    
+    samtools faidx "$GENOME" \
+      OZ004711:64521164-64523425 \
+      | tail -n +2 | tr -d '\n' \
+      | tr 'ACGTacgt' 'TGCAtgca' | rev \
+      | awk '{print ">Vespertilio_murinus_CHARLIE8\n"$0}' \
+      > "$OUTDIR/CHARLIE8.fa"
+    
+    samtools faidx "$GENOME" \
+      OZ004711:64524093-64524249 \
+      | tail -n +2 | tr -d '\n' \
+      | tr 'ACGTacgt' 'TGCAtgca' | rev \
+      | awk '{print ">Vespertilio_murinus_NCL_exon9\n"$0}' \
+      > "$OUTDIR/NCL_exon9.fa"
+
+compribamos la región entre ambos:
+
+    samtools faidx "$GENOME" \
+      OZ004711:64523426-64524092 \
+      | tail -n +2 | tr -d '\n' \
+      | tr 'ACGTacgt' 'TGCAtgca' | rev \
+      | awk '{print ">NCL_exon9_CHARLIE8_intervening_667bp\n"$0}' \
+      > "$OUTDIR/NCL_exon9_CHARLIE8_intervening.fa"
+
+verificamos distancias:
+
+    for f in ANALYSES/NCL/sequences/Vespertilio_murinus/*.fa; do
+        printf "%s\t" "$(basename "$f")"
+        grep -v '^>' "$f" | tr -d '\n' | wc -c
+    done
+
+.. code-block:: bash
+
+    awk -F '\t' '
+    BEGIN {OFS="\t"}
+    $1=="OZ004711" &&
+    $3=="exon" &&
+    $4<=64537118 &&
+    $5>=64521164 {
+        print FILENAME,$4,$5,$7,$9
+    }' /Volumes/Expansion/IGV/Vespertilio_murinus/ERR1375784*_MM.gtf
