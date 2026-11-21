@@ -200,7 +200,7 @@ así que vamos a probar de nuevo.
 
     nano auditar_NCL.py
 
-.. code-block:: pyhton
+.. code-block:: python
 
     #!/usr/bin/env python3
     """Auditoría independiente de NCL/Charlie8 en todas las especies analizadas.
