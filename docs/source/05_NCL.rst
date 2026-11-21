@@ -373,3 +373,11 @@ así que vamos a probar de nuevo.
             print('Malformed rows (first 5):',problems[:5])
     
     if __name__=='__main__': main()
+
+
+
+RUM!
+
+.. code-block:: bash
+
+    python3 auditar_NCL.py --root ../../..
