@@ -728,6 +728,156 @@ cobertura ≥99 % de la sonda, en orientación 3′ y separados por ≤25 kb. **
 sabe aún** cuántas tienen una ORF fusionada intacta ni cuántas contienen
 codones de terminación prematuros.
 
+Paso 13. Actualización posterior: discrepancia entre las auditorías en Pipistrellus pygmaeus
+-------------------------------------------------------------------------------------------
+
+**Alcance.** Este paso documenta verificaciones posteriores al cierre histórico
+indicado en el paso 12. No modifica los resultados ni los comandos originales.
+El propósito es distinguir **loci NCL-like**, **candidatos de arquitectura
+genómica NCL–CHARLIE8**, **parálogos identificados inequívocamente** y
+**transcritos codificantes validados**. Son categorías distintas.
+
+**Primera auditoría: candidatos NCL-like.** El archivo
+``results/NCL_all_loci_exon_CHARLIE8.tsv`` registró las siguientes entradas
+para *Pipistrellus pygmaeus*::
+
+    Scaffold   Exones detectados       CHARLIE8_3prime  Estado
+    OX465309   2,3,4,6,7               0                NCL_LIKE_LOCUS_NO_3PRIME_CHARLIE8
+    OX465310   1,2,3,4,5,6,7,8,9       0                NCL_LIKE_LOCUS_NO_3PRIME_CHARLIE8
+    OX465317   2,3,4,6,7               0                NCL_LIKE_LOCUS_NO_3PRIME_CHARLIE8
+
+Estos son **tres registros de locus** de la tabla inicial, no una
+confirmación de tres parálogos completos. ``0`` indica que *ese análisis*
+no asignó CHARLIE8 en 3′; no constituye prueba de ausencia genómica.
+
+**Auditoría posterior:** ``results/NCL_28_species_exon_TE_recovery.tsv``
+reportó para *P. pygmaeus* los siguientes porcentajes de recuperación de
+sondas, definidos por los encabezados del archivo:
+
+.. csv-table:: Recuperación NCL–CHARLIE8 en *Pipistrellus pygmaeus*
+   :header: "Exón 1", "Exón 2", "Exón 3", "Exón 4", "Exón 5", "Exón 6", "Exón 7", "Exón 8", "Exón 9"
+
+   "92.11", "88.60", "77.93", "93.33", "100.00", "100.00", "100.00", "99.19", "99.37"
+
+Para CHARLIE8 se registraron **99 % de cobertura de la sonda**, **95.720 %
+de identidad** y una **distancia reportada de 999 bp respecto al exón 9**.
+Estas son métricas de alineamiento, no medidas de integridad de CDS.
+
+La tabla ``results/NCL_Charlie8_full_length_coordinates.tsv`` (sin
+encabezado, coordenadas BLAST 1-based inclusivas) contiene la fila::
+
+    Pipistrellus_pygmaeus  OX465310  -  27958546  27960450  95.720  99
+
+Es decir, el hit de CHARLIE8 está en **OX465310, hebra negativa**, el
+mismo scaffold para el cual la primera auditoría registró nueve hits de
+exones NCL. En hebra negativa, la dirección transcripcional 3′ va hacia
+coordenadas decrecientes. La segunda auditoría clasificó esta asociación
+como candidato y calculó la distancia de 999 bp, pero **en las consultas
+manuales registradas aquí no se extrajeron ni cotejaron las coordenadas
+del exón 9**; por tanto, ese cálculo no se ha verificado aquí de manera
+independiente.
+
+**Interpretación restringida:** la evidencia posterior permite recuperar
+*P. pygmaeus* como **candidato genómico** NCL–CHARLIE8 que la
+clasificación inicial no había reconocido. No demuestra la existencia
+de un transcrito quimérico, una ORF intacta, un producto proteico o la
+identidad evolutiva inequívoca de un parálogo. La recuperación incompleta
+de los exones 1–4 requiere revisión de límites y cobertura.
+
+**Consultas reproducibles de solo lectura, desde la raíz del proyecto:**
+
+.. code-block:: bash
+
+    grep -n 'Pipistrellus_pygmaeus' \
+      ANALYSES/NCL/results/NCL_all_loci_exon_CHARLIE8.tsv
+    head -n 1 ANALYSES/NCL/results/NCL_28_species_exon_TE_recovery.tsv
+    grep -n 'Pipistrellus_pygmaeus' \
+      ANALYSES/NCL/results/NCL_28_species_exon_TE_recovery.tsv
+    grep -n 'Pipistrellus_pygmaeus' \
+      ANALYSES/NCL/results/NCL_Charlie8_full_length_coordinates.tsv
+    grep -n 'Pipistrellus_pygmaeus' \
+      ANALYSES/NCL/results/NCL_28_species_exon_recovery.tsv
+
+El último archivo de recuperación exónica comunica porcentajes, **no
+coordenadas**. Para completar esta validación se deben consultar los HSP
+originales de exón 9 en
+``intermediate/NCL_103_blast/Pipistrellus_pygmaeus.tsv`` y del TE en
+``intermediate/NCL_Charlie8_blast/Pipistrellus_pygmaeus.tsv``, verificar
+mismo scaffold/hebra y recalcular la distancia 3′ en coordenadas
+1-based inclusivas. Después, reconstruir la estructura exónica y evaluar
+por separado evidencia de RNA-seq y CDS.
+
+Paso 14. Control comparativo: Pipistrellus kuhlii y límites de la identificación de parálogos
+------------------------------------------------------------------------------------------------
+
+**Registro genómico.** La auditoría inicial detectó seis registros NCL-like
+para *Pipistrellus kuhlii*, incluidos varios en
+``scaffold_m20_p_7``. Solo uno figura como
+``NCL_CHIMERIC_CANDIDATE`` con nueve exones y CHARLIE8 en 3′. El archivo
+``ANALYSES/dNdS_FINAL/results/NCL_final_loci.tsv`` conserva un candidato
+seleccionado en ese scaffold, hebra ``-``, con la nota
+``LOCUS_ASSIGNMENT_REQUIRES_REVIEW``. **No** se deben equiparar seis
+registros a seis parálogos biológicos independientes.
+
+El archivo ``results/NCL_Charlie8_3prime_candidates.tsv`` registra el
+par exón 9–CHARLIE8 como sigue:
+
+.. code-block:: text
+
+    Species                 Scaffold          Strand  Exon9 (1-based)       CHARLIE8 (1-based)      Gap
+    Pipistrellus_kuhlii     scaffold_m20_p_7  -       25368466–25368622    25365574–25367468     997 bp
+
+El hit de CHARLIE8 presenta identidad 94.937 % y cobertura 99 % en
+ese archivo. El orden es compatible con una arquitectura genómica
+NCL–CHARLIE8, pero por sí solo **no valida el splicing**.
+
+**Auditoría de CDS, resultados provisionales sin reescritura de archivos.**
+El script histórico de reconstrucción retiraba siempre 30 nt del extremo
+5′ del exón 2 antes de concatenar la CDS. La sonda de referencia de
+114 nt inicia su motivo codificante homólogo ``ATGGCT`` en la posición
+31 (base 1). En *P. kuhlii*, las delimitaciones alternativas del exón 2
+recuperaron longitudes de 105 nt (script 16) y 110 nt (script 16b), con
+``ATGGCT`` en las posiciones 22 y 27, respectivamente. Retirar 30 nt
+del exón 2 reconstruido por el script 16b elimina parte del motivo de
+inicio y produce una traducción artificialmente desplazada.
+
+Al reconstruir **solo en memoria** la secuencia desde el ``ATGGCT``
+homólogo del exón 2 (script 16b), la porción HOST resultó de **1134 nt**,
+y la quimera provisional HOST + TE de **2807 nt** (residuo módulo 3 = 2).
+Los codones de parada en esa traducción provisional disminuyeron de
+**91 a 48**, pero persistieron. El primer stop en HOST aparece en el
+**codón 195**, dentro del exón 5 reconstruido. Estos números describen
+el modelo in silico, **no** prueban stops auténticos de un transcrito.
+
+En el alineamiento del exón 3 con la sonda de referencia se identificaron
+cinco gaps de longitud 24, 30, 9, 24 y 3 nt, todos múltiplos de tres,
+con una diferencia neta de -90 nt. En el exón 4 se obtuvo una longitud
+de 131 nt frente a los 120 nt de referencia; el alineamiento contiene
+una inserción interna de 12 nt y un gap terminal de 1 nt, que en conjunto
+producen una diferencia neta de +11 nt. El sitio donador genómico
+seleccionado para el exón 4 presenta ``GT`` y el aceptor ``AG``; esas
+señales canónicas no identifican por sí solas la isoforma expresada.
+No se ha demostrado si las diferencias del alineamiento corresponden a
+indels biológicos, variantes de empalme, o errores de delimitación.
+
+**Disponibilidad de RNA-seq.** En
+``/Volumes/Expansion/IGV/Pipistrellus_kuhlii/`` se identificaron
+``SRR18652220_MM.sorted.bam``, su índice ``.bai`` y
+``SRR18652220_MM.gtf``. Una consulta con ``samtools view -c`` en
+``scaffold_m20_p_7:25378000-25380000`` devolvió **cero alineamientos**.
+Este resultado se restringe a **esa región y ese BAM**; no prueba ausencia
+de expresión del gen completo en la especie ni en otros tejidos.
+No se identificó evidencia de una unión exón 9–CHARLIE8 expresada en las
+comprobaciones aquí documentadas.
+
+**Regla de interpretación para la figura y para dN/dS:** distinguir
+(1) locus NCL-like, (2) arquitectura genómica candidata NCL–CHARLIE8,
+(3) unión transcrita validada por RNA y (4) CDS/ORF intacta. La
+clasificación de *P. kuhlii* como portadora de proteína quimérica intacta
+o como pseudogenizada **no está resuelta**. No usar la reconstrucción
+provisional para estimación de selección sin una validación independiente
+del locus y de los límites codificantes.
+
 Apéndice A. Código original de la auditoría basada en BED
 --------------------------------------------------------
 
@@ -910,4 +1060,3 @@ la auditoría independiente por secuencias descrita en los pasos 3–11.
             print('Malformed rows (first 5):',problems[:5])
     
     if __name__=='__main__': main()
-
