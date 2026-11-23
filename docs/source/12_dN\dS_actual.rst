@@ -996,3 +996,428 @@ COMANDO INICIAL OPCIONAL (SOLO LECTURA), DESDE RAÍZ::
 
 **No ejecutar ningún script histórico de reconstrucción con salidas
 existentes sin redireccionarlo a un directorio nuevo.**
+
+
+7. ACTUALIZACION DEL 23 DE NOVIEMBRE DE 2026: 25 CDS, ALINEAMIENTOS Y ARBOLES
+=============================================================================
+
+ESTA SECCION ES LA CONTINUACION MAS RECIENTE DE LA BITACORA.
+Tiene precedencia sobre el estado de avance y los pendientes de la seccion 6,
+particularmente 6.7-6.9. NO reemplaza la documentacion historica ni implica
+que las inferencias de ortologia, expresion y seleccion esten terminadas.
+
+7.1. Estado biologico exacto: 25 de 26 candidatos NCL
+----------------------------------------------------
+
+De los 26 candidatos definidos en 6.2 (28 recuperaciones iniciales menos
+``Cistugo_seabrae`` y ``Pipistrellus_kuhlii``), se reconstruyeron 25 CDS
+quimericas provisionales NCL-CHARLIE8, que pasaron los controles de ORF:
+ATG inicial, TAA terminal y ausencia de codones de parada internos.
+Estas comprobaciones NO prueban por si mismas expresion, ortologia inequivoca,
+funcionalidad proteica ni homologia de todas las posiciones del alineamiento.
+
+La vigesimosexta especie candidata, ``Pipistrellus_nathusii``, SIGUE PENDIENTE:
+el BLAST corresponde a ``hap2_chr_8`` y en el Mac solo se dispone de un
+ensamblaje hap1. NO transferir coordenadas entre haplotipos.
+
+``Cistugo_seabrae`` se mantiene excluida de este conjunto de dN/dS por
+recuperacion insuficientemente fiable del locus/exon 1; ``Pipistrellus_kuhlii``
+por ambiguedad de asignacion entre copias NCL. Estas exclusiones son decisiones
+de QC del conjunto de seleccion, no una negacion de hits genomicos.
+
+Archivo CDS ACTUAL, provisional y NO SOBRESCRIBIR::
+
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_25_chimera_cds_Antrozous_corrected.fa
+
+Archivos historicos intermedios, tambien NO SOBRESCRIBIR::
+
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_22_chimera_cds_provisional.fa
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_22_reconstruction_QC.tsv
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_23_chimera_cds_provisional.fa
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_24_chimera_cds_provisional.fa
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_25_chimera_cds_provisional.fa
+
+**Importante:** esta lista de rutas refleja las escrituras informadas en el
+terminal durante el trabajo. Los archivos residen en el Mac del investigador;
+no se han vuelto a inspeccionar directamente desde este entorno de ChatGPT.
+
+7.2. Nuevas reconstrucciones posteriores al conjunto de 22
+---------------------------------------------------------
+
+``Vespertilio_murinus`` (especie 23):
+
+* Ensamblaje ``SPECIES/Vespertilio_murinus/mVesMur1.1.pri.fa``;
+  scaffold ``OZ004711``, hebra negativa.
+* RNA-seq en cinco BAM ``ERR13757845`` a ``ERR13757849``: 27
+  alineamientos de junction NCL-CHARLIE8 (4, 8, 2, 6, 7 por BAM).
+* Exones codificantes: exon 2 64534976-64535083 (78 nt desde el ATG);
+  exon 3 64532829-64533132 (304 nt); exon 4 64532275-64532445
+  (171 nt); exon 5 64531425-64531511 (87 nt);
+  exon 6 64530361-64530499 (139 nt);
+  exon 7 64528873-64528997 (125 nt);
+  exon 8 64528112-64528235 (124 nt);
+  exon 9 64524093-64524250 (158 nt).
+* TE codificante reconstruido: ``OZ004711:64521421-64523093``
+  (1673 nt); HOST = 1186 nt; quimera = 2859 nt, 952 aa sin stop.
+* Se obtuvo alineamiento TE de 1673/1673 nt, sin gaps, con identidad
+  de 96.294 % respecto a la region de referencia Myotis myotis usada
+  para la reconstruccion. No confundir este porcentaje con la identidad
+  del BLAST historico (95.151 %) recogida en la tabla de recuperacion.
+* El apoyo RNA indica uniones de empalme observadas, NO prueba
+  por si solo una molecula completa ni una proteina funcional.
+
+``Pipistrellus_pygmaeus`` (especie 24):
+
+* Ensamblaje ``SPECIES/Pipistrellus_pygmaeus/mPipPyg1.1.pri.fa``;
+  scaffold ``OX465310``, hebra negativa. Esta reconstruccion se baso
+  en evidencia genomica y homologia; NO se verifico RNA local aqui.
+* Exon 2 27977258-27977371 (84 nt codificantes desde ATG);
+  exon 3 27974562-27974865 (304 nt);
+  exon 4 27974004-27974180 (177 nt);
+  exon 5 27971487-27971573 (87 nt);
+  exon 6 27970862-27971000 (139 nt);
+  exon 7 27969347-27969471 (125 nt);
+  exon 8 27968571-27968694 (124 nt);
+  exon 9 27961450-27961607 (158 nt).
+* TE 27958778-27960450 (1673 nt); HOST = 1198 nt;
+  quimera = 2871 nt; 956 aa sin stop.
+* Identidad del segmento TE reconstruido frente al de referencia:
+  96.593 %, 1673/1673 nt sin gaps. BLAST historico: 95.720 %.
+* El valor ``RNA support = YES`` de una tabla previa requiere
+  trazabilidad de la evidencia original; no se ha ratificado en
+  esta reconstruccion.
+
+``Nyctalus_aviator`` (especie 25):
+
+* Ensamblaje ``SPECIES/Nyctalus_aviator/mNycAvi1.1.pri.fa``;
+  scaffold ``CM072928``, hebra negativa. Sin RNA-seq local verificado.
+* Exon 2 codificante 27745830-27745913 (84 nt);
+  exon 3 27743197-27743500 (304 nt);
+  exon 4 27742636-27742812 (177 nt);
+  exon 5 27742067-27742153 (87 nt);
+  exon 6 27741470-27741608 (139 nt);
+  exon 7 27739968-27740092 (125 nt);
+  exon 8 27739191-27739314 (124 nt);
+  exon 9 27732036-27732190 (155 nt).
+* TE 27729378-27731050 (1673 nt); HOST = 1195 nt;
+  quimera = 2868 nt; 955 aa sin stop.
+* El exon 9 es 3 nt mas corto que el de P. pygmaeus (155 frente
+  a 158 nt). Se prefirio el modelo por homologia/ORF frente a
+  un candidato de 174 nt peor alineado.
+* Identidad TE reconstruido frente a referencia: 96.772 %,
+  1673/1673 nt sin gaps. BLAST historico: 95.929 %.
+* Se comprobo posteriormente un gap de un codon completo en
+  la columna MAFFT 425, dos codones antes de la union. El codon
+  ``TGG`` (W) presente en M. myotis y P. pygmaeus no aparece
+  en N. aviator en ese alineamiento. Compatible con la diferencia
+  de 3 nt del exon 9; NO se ha demostrado el evento ancestral.
+
+7.3. Correccion especifica de Antrozous pallidus
+------------------------------------------------
+
+Para ``Antrozous_pallidus`` se reviso el exon 4 en el scaffold
+``manual_scaffold_1``, hebra negativa. La reconstruccion historica
+incluia 126 nt (32434710-32434835); se propuso incluir otros
+42 nt en 32434668-32434709, obteniendo exon 4 de 168 nt.
+
+* Contexto donador corregido ``AGAGGAAG|GTAATTGA`` frente al
+  antiguo ``TGAAGATG|GTGTGGAG``.
+* Modelo previo quimera: 2835 nt; corregido: 2877 nt.
+* HOST corregido: 1204 nt; sin stops internos, ATG inicial,
+  TAA terminal, union hibrida GGA.
+* Apoyo: homologia genomica y ORF; NO RNA-seq local comprobado.
+* El exon 3 de Antrozous (322 nt) se parece en longitud y homologia
+  al de Corynorhinus/Plecotus (328 nt), aunque difiere del de
+  Myotis myotis (376 nt); no forzar equivalencia de longitud.
+
+El archivo de 25 CDS anteriormente guardado
+``NCL_25_chimera_cds_provisional.fa`` NO es el canon actualizado:
+la version activa incorpora esta correccion y se llama
+``NCL_25_chimera_cds_Antrozous_corrected.fa``.
+
+7.4. Alineamiento proteico de las 25 quimeras
+--------------------------------------------
+
+Programas verificados en el entorno ``samtools_env`` del Mac:
+
+* ``mafft`` instalado en
+  ``/Users/manuelhoyos/miniconda3/envs/samtools_env/bin/mafft``.
+* ``hyphy`` instalado en
+  ``/Users/manuelhoyos/miniconda3/envs/samtools_env/bin/hyphy``.
+* ``macse``, ``pal2nal.pl``, ``prank`` y ``muscle`` no se
+  encontraron en PATH durante la comprobacion.
+
+Archivo proteico guardado, extraido de las CDS y sin stop terminal::
+
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_25_chimera_proteins_provisional.fa
+
+Caracteristicas: 25 proteinas, 952-966 aa; ninguna parada interna.
+
+Se ejecuto MAFFT 7.526 con estrategia L-INS-i::
+
+    mafft --localpair --maxiterate 1000 --thread 2 INPUT > OUTPUT
+
+Resultado: codigo de salida 0; convergencia de refinamiento.
+Archivo guardado::
+
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_25_chimera_proteins_MAFFT_LINSI.fa
+
+QC comprobado mediante Biopython:
+
+* 25 secuencias, 25 identificadores unicos;
+  cada proteina original se conserva exactamente tras retirar gaps.
+* Longitud del alineamiento: 983 columnas de aminoacidos.
+* 921 columnas sin gaps; 62 columnas con al menos un gap.
+* 35 columnas tienen gaps en al menos 10 especies;
+  maximo 24 gaps en una sola columna.
+* Se identificaron 12 bloques consecutivos con gaps:
+  columnas 2, 9, 26, 40, 61-78, 110, 119-126,
+  132-133, 141, 149-150, 189-213 y 425.
+* Columna 40: gap en 24/25 especies.
+* Columnas 61-78: gap en 10/25 especies cada una.
+* Columnas 149-150: gaps en 15/25 especies cada una.
+* Bloque 189-213: hasta 20 gaps en una columna y
+  21 especies afectadas en alguna posicion del bloque.
+* Las diferencias de HOST alrededor de las regiones repetitivas
+  ricas en E/D (glutamato/aspartato), especialmente cerca de
+  189-213, tienen homologia local potencialmente ambigua.
+
+NO eliminar bloques automaticamente: evaluar sensibilidad de los
+analisis con/sin columnas ambiguas, despues de justificar un criterio
+reproducible. Una columna sin gaps no demuestra por si sola homologia.
+
+7.5. Union HOST-CHARLIE8 y codon hibrido
+---------------------------------------
+
+En las 25 CDS actuales:
+
+* La porcion genomica TE reconstruida mide 1673 nt.
+* ``HOST_nt % 3 == 1``.
+* El codon que atraviesa la union tiene un nucleotido HOST
+  y dos nucleotidos TE y es ``GGA`` en las 25 especies.
+* Ese codon ocupa en todas ellas la columna **427** del
+  alineamiento MAFFT, sin gaps.
+* Se examinaron las columnas 417-437: solo ``Nyctalus_aviator``
+  presenta un gap cercano, en la columna 425.
+* Para referencia, codones 424/425/426/427:
+
+  - Myotis_myotis: AGT / TGG / AGA / GGA.
+  - Pipistrellus_pygmaeus: CGT / TGG / AGA / GGA.
+  - Nyctalus_aviator: CGG / --- / AGA / GGA.
+
+Estos controles respaldan la coherencia del alineamiento en la union;
+no prueban por si solos que todas las uniones se transcriban ni
+que todos los loci sean ortologos.
+
+7.6. Proyeccion a codones y separacion HOST / TE / CHIMERA
+--------------------------------------------------------
+
+Se proyecto el alineamiento proteico de MAFFT sobre las CDS originales
+mediante Biopython: cada aminoacido se sustituyo por su codon original
+y cada gap proteico por ``---``. Se excluyo el ``TAA`` terminal.
+La traduccion de cada codon se cotejo con su aminoacido, y la
+secuencia sin gaps se confronto con la CDS sin stop.
+
+Archivo CHIMERA guardado::
+
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_25_chimera_codons_MAFFT_LINSI.fa
+
+QC de CHIMERA:
+
+* 25 especies; 983 columnas codonicas, 2949 nt alineados.
+* Codones invalidos: 0; codones stop internos: 0.
+* Columnas codonicas con gaps: 62.
+* Columna 427: ``GGA`` en todas las especies.
+* Los gaps son tripletes completos; no se alteraron las CDS fuente.
+
+Separacion guardada en dos FASTA adicionales::
+
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_25_HOST_codons_MAFFT_LINSI.fa
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_25_TE_codons_MAFFT_LINSI.fa
+
+Criterio codonico explicito:
+
+.. list-table:: Componentes NCL HyPhy 3 provisionales
+   :header-rows: 1
+
+   * - Componente
+     - Columnas MAFFT (1-based)
+     - Codones
+     - Especies
+   * - HOST
+     - 1-426
+     - 426
+     - 25
+   * - Union mixta (solo CHIMERA)
+     - 427
+     - 1
+     - 25
+   * - TE
+     - 428-983
+     - 556
+     - 25
+   * - CHIMERA
+     - 1-983
+     - 983
+     - 25
+
+Los codones completos de HOST y TE se analizaran separadamente,
+excluyendo el codon GGA de ambos para no asignarlo enteramente
+a un solo origen. La CHIMERA conserva GGA. La separacion y
+validacion de tripletes se confirmaron en la salida terminal.
+NO se ha ejecutado HyPhy 3 sobre estos nuevos alineamientos.
+
+ADVERTENCIA: estos alineamientos son candidatos con integridad
+codonica demostrada; la evaluacion de homologia ambigua, ortologia,
+calidad del arbol y modelos estadisticos sigue pendiente.
+
+7.7. Arboles de referencia transferidos a carpeta ``arbol``
+---------------------------------------------------------
+
+Directorio creado en el Mac::
+
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/arbol/
+
+Archivos presentes segun ``ls -l`` del usuario::
+
+    Myotis_cactus_neutral_ML_RE-ROOTED.tre
+    Myotis_cactus_neutral_ML_rooted.tre
+
+El primero (10146 bytes) es **NEXUS de FigTree**, no Newick simple.
+El segundo (3766 bytes) es **Newick**. Los archivos ``._*`` son
+metadatos auxiliares de macOS, NO arboles, e ignorarlos.
+
+Se leyeron correctamente con::
+
+    Phylo.read("Myotis_cactus_neutral_ML_RE-ROOTED.tre", "nexus")
+    Phylo.read("Myotis_cactus_neutral_ML_rooted.tre", "newick")
+
+Auditoria confirmada por terminal:
+
+* Ambos: 111 terminales, 111 identificadores unicos.
+* Etiquetas compartidas: 111/111; diferencias: ninguna.
+* Longitud total de ramas reportada: 6.88873 en ambos.
+* ``rooted`` de Biopython: NEXUS ``True``; Newick ``False``.
+  Esto es una propiedad de lectura/representacion, NO una prueba
+  del enraizamiento biologico.
+* Ambos presentan tres descendientes directos en la raiz
+  de su representacion: grupos de 103, 7 y 1 taxones.
+* El grupo de 1 contiene ``HLequAsi3`` (Equus asinus, por codigo
+  inferido; confirmar nomenclatura con tabla de identificadores).
+* Grupo de 7 incluye, entre los ejemplos, ``HLbosTau10``,
+  ``HLeleMax2``, ``HLmanPen4``, ``HLneoVis2``, ``HLsorFum1``.
+* Comparacion de topologias NO ENRAIZADAS mediante biparticiones:
+  NEXUS 108; Newick 108; compartidas 108;
+  exclusivas NEXUS 0; exclusivas Newick 0.
+  Resultado: **topologias no enraizadas IDENTICAS**.
+
+No se ha probado formalmente identidad de cada longitud de rama
+individual, solo la longitud total. Tampoco se ha validado la
+ubicacion biologica de la raiz. Ambos utilizan etiquetas codificadas
+(p. ej. ``HLmyoMyo6``), no los identificadores ``Myotis_myotis``
+de los FASTA NCL: el cotejo de nombres exactos sin diccionario
+arroja 0 coincidencias y NO implica ausencia de las especies.
+
+No utilizar indiscriminadamente el archivo NEXUS completo como
+Newick: ``Phylo.parse(..., "newick")`` interpreto erroneamente
+las instrucciones NEXUS/FigTree como 99 pseudoarboles.
+
+7.8. Tabla del manuscrito: auditoria y cambios necesarios
+--------------------------------------------------------
+
+La tabla de 28 recuperaciones NCL proporcionada por el investigador
+usa columnas ``Architecture``, ``Species``, ``Genus``,
+``Age (Ma) of the common node (Ancestor)``, ``Bat family``,
+``Architecture recovery``, ``TE recovery (%)``,
+``TE identity (%)`` y ``RNA support``.
+
+**No confundir** los hits de BLAST de esta tabla con la recuperacion
+integra de CDS ni con el QC de los 25 alineamientos de HyPhy 3.
+
+Correcciones/revisiones prioritarias:
+
+#. ``Plecotus auritus``: cambiar ``RNA support`` de NO a YES:
+   29 alineamientos para la union NCL-CHARLIE8 y 90 para exon 4-5
+   (cinco BAM; comprobados). No implica validacion proteica.
+#. ``Vespertilio murinus``: conservar YES, respaldado por 27
+   alineamientos de union NCL-CHARLIE8 en cinco BAM.
+#. ``Pipistrellus pygmaeus``: el YES original NO fue verificado
+   mediante RNA local en la reconstruccion reciente. Marcar
+   ``YES (source to verify)`` o ``not independently verified``
+   hasta localizar y examinar la evidencia original; NO cambiar
+   a NO afirmando ausencia demostrada de RNA.
+#. ``Antrozous pallidus``: actualizar nota de recuperacion para
+   reflejar correccion provisional del exon 4 de +42 nt;
+   sin soporte RNA confirmado aqui.
+#. ``Nyctalus aviator``: actualizar nota para reflejar CDS
+   provisional intacta y exon 9 de 155 nt, con un codon gap
+   respecto a otras especies, sin evidencia RNA confirmada.
+#. ``Cistugo seabrae`` y ``Pipistrellus kuhlii``: conservar como
+   hallazgos genomicos historicos pero agregar columna de
+   elegibilidad: **excluidas de HyPhy 3 por QC de locus**.
+#. ``Pipistrellus nathusii``: agregar nota **no incluida en las
+   25 CDS actuales**: BLAST en hap2; falta ensamblaje hap2.
+#. Los 25 taxones del nuevo alineamiento deben poder distinguirse
+   claramente de los 28 hits historicos; 25/28 aceptados
+   provisionalmente para alineamiento, 2 excluidos, 1 pendiente.
+#. La identidad TE del BLAST original no debe reemplazarse por
+   la identidad del segmento TE de la CDS reconstruida. Si se
+   presenta esta ultima, introducir una nueva columna y definir
+   referencia, longitud y metodo.
+#. La cifra 36.37 Ma es un valor heredado de la tabla, no
+   recalculado ni auditado durante esta etapa. No afirmar una
+   edad nueva sin revisar arbol fechado/fuente original.
+#. ``9/9 NCL exon matches`` solo indica hits; no garantiza
+   que los nueve exones correspondan a una CDS valida.
+
+En particular: ``P. pygmaeus`` puede tener evidencia transcriptomica
+original documentada fuera del conjunto local; **no se sabe** con
+la informacion disponible aqui si ese YES es correcto.
+
+7.9. Punto EXACTO de reanudacion y normas de seguridad
+-----------------------------------------------------
+
+ESTADO AL CIERRE DEL 23 DE NOVIEMBRE DE 2026:
+
+* 25 CDS NCL-CHARLIE8 provisionales reconstruidas y guardadas.
+* Proteinas alineadas con MAFFT L-INS-i; 983 columnas.
+* CHIMERA/HOST/TE codonicos separados y guardados para 25 especies.
+* QC de integridad codonica aprobado; region HOST de baja
+  complejidad todavia requiere analisis de sensibilidad.
+* Dos arboles de 111 terminales en ``arbol/``: NEXUS y Newick,
+  topologia no enraizada identica (108/108 splits).
+* Todavia NO hay un arbol podado validado para las 25 especies.
+* Todavia NO se han corrido nuevos tests HyPhy 3 sobre estas CDS.
+
+SIGUIENTE PASO RECOMENDADO (uno solo, SOLO LECTURA):
+
+#. Localizar el diccionario / mapeo fiable entre etiquetas de
+   arbol ``HL...`` y especies binomiales de los FASTA NCL; comparar
+   con identificadores de antiguos NEXUS NCL y los archivos de
+   referencia del proyecto. No inferir a ciegas desde prefijos.
+
+DESPUES (aun NO ejecutado):
+
+#. Confirmar correspondencia exacta 25/25 y unicidad de etiquetas.
+#. Podar una **copia nueva** del arbol escogido a 25 especies,
+   conservar topologia y documentar longitudes de ramas y raiz.
+#. Comparar topologia y longitud de ramas con arbol NCL historico.
+#. Auditar regiones HOST ambiguas, decidir mascara de sensibilidad
+   con criterios explicitos y reproducibles (sin borrado arbitrario).
+#. Evaluar si el arbol de especies basado en sitios neutrales es
+   apropiado para el test que se realizara; HyPhy puede reestimar
+   longitudes de rama bajo su modelo de sustitucion.
+#. Ejecutar HyPhy 3 en nuevo directorio de resultados y registrar
+   version, parametros, arbol, datasets, JSON/LOG y correcciones
+   multiples. No reinterpretar p nominal como q significativa.
+
+REGLAS PRACTICAS:
+
+* Un solo comando ejecutable por turno cuando se trabaje en Mac.
+* Preferir auditorias de SOLO LECTURA antes de escribir.
+* NO modificar ni sobrescribir FASTA, tablas, NEXUS, JSON y LOG
+  historicos o provisionales previamente confirmados.
+* Distinguir explicitamente: observacion / inferencia / desconocido.
+* Mantener ``Pipistrellus_nathusii`` fuera de la matriz de 25
+  hasta disponer de un locus y una CDS validos en el ensamblaje
+  correcto. No convertir hits hap2 usando coordenadas hap1.
