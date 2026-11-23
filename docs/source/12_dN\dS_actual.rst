@@ -523,3 +523,476 @@ Estado
 
 Pendiente: comparar cada árbol NEXUS con el árbol maestro
 podado al conjunto correspondiente de especies.
+
+
+
+6. ACTUALIZACIÓN DEL 22–23 DE NOVIEMBRE DE 2026: NCL–CHARLIE8
+================================================================
+
+IMPORTANTE: esta sección es el estado de trabajo más reciente y tiene
+precedencia sobre las cifras históricas de NCL y KATNAL1 anteriores.
+Los análisis originales BUSTED-MH/FEL-MH y sus NEXUS siguen siendo
+históricos; NO se han recalculado con estas CDS nuevas.
+
+6.1. Decisión sobre especies para HyPhy 3
+----------------------------------------
+
+Las siguientes listas fueron propuestas por el investigador como conjuntos
+CANDIDATOS, no como secuencias codificantes validadas:
+
+* NCL–CHARLIE8: las 28 especies de la auditoría independiente de NCL,
+  EXCLUYENDO ``Pipistrellus_kuhlii`` y ``Cistugo_seabrae``: 26 especies.
+* TMPO (14): Myotis_myotis, Myotis_daubentonii, Myotis_mystacinus,
+  Myotis_evotis, Myotis_thysanodes, Myotis_auriculus,
+  Myotis_californicus, Myotis_occultus, Myotis_lucifugus,
+  Myotis_velifer, Myotis_yumanensis, Myotis_nigricans,
+  Myotis_vivesi, Myotis_volans.
+* KATNAL1 (5): Myotis_myotis, Myotis_daubentonii,
+  Myotis_mystacinus, Myotis_evotis, Myotis_volans.
+* ZKSCAN7 (7): Rhinolophus_perniger, Rhinolophus_trifoliatus,
+  Rhinolophus_foetidus, Rhinolophus_pearsonii, Rhinolophus_affinis,
+  Rhinolophus_hipposideros, Rhinolophus_ferrumequinum.
+* FBXO3 (3): Rhinolophus_sinicus, Rhinolophus_hipposideros,
+  Rhinolophus_ferrumequinum.
+* ZFP28–GOLEM-1p (22): Rousettus_aegyptiacus,
+  Hypsignathus_monstrosus, Eonycteris_spelaea, Cynopterus_sphinx,
+  Rhinopoma_muscatellum, Rhinopoma_microphyllum,
+  Rhinolophus_ferrumequinum, Rhinolophus_hipposideros,
+  Rhinolophus_affinis, Rhinolophus_pearsonii,
+  Rhinolophus_trifoliatus, Rhinolophus_perniger,
+  Hipposideros_caffer, Hipposideros_abae, Hipposideros_jonesi,
+  Hipposideros_armiger, Hipposideros_swinhoii, Hipposideros_larvatus,
+  Molossus_molossus, Molossus_alvarezi, Eumops_nanus,
+  Tadarida_brasiliensis.
+
+Total: 6 arquitecturas y 77 entradas especie–arquitectura. Los nombres
+científicos deben cotejarse con los identificadores de los FASTA; la
+ortografía aquí está normalizada provisionalmente, no validada contra
+todos los ensamblajes. KATNAL1 era histórica y provisionalmente excluida;
+su reingreso está propuesto, NO validado. Tres secuencias para FBXO3
+suponen potencia estadística limitada. Todas requieren revisión de
+ortología, límites codificantes y ausencia de paradas internas.
+
+6.2. Listado EXACTO de 26 candidatos NCL
+---------------------------------------
+
+La consulta a
+``ANALYSES/NCL/results/NCL_28_species_exon_TE_recovery.tsv``
+produjo 26 especies tras excluir las dos citadas::
+
+    Antrozous_pallidus
+    Corynorhinus_mexicanus
+    Corynorhinus_townsendii
+    Eptesicus_fuscus
+    Eptesicus_nilssonii
+    Lasiurus_ega
+    Myotis_auriculus
+    Myotis_californicus
+    Myotis_daubentonii
+    Myotis_evotis
+    Myotis_lucifugus
+    Myotis_myotis
+    Myotis_mystacinus
+    Myotis_nigricans
+    Myotis_occultus
+    Myotis_pilosus
+    Myotis_thysanodes
+    Myotis_velifer
+    Myotis_vivesi
+    Myotis_volans
+    Myotis_yumanensis
+    Nyctalus_aviator
+    Pipistrellus_nathusii
+    Pipistrellus_pygmaeus
+    Plecotus_auritus
+    Vespertilio_murinus
+
+En la reconstrucción histórica existían 23 registros (22 de las 26
+seleccionadas + Pipistrellus_kuhlii); de los 22 seleccionados,
+15 eran ``PASS`` y 7 fallaban QC. Faltaban cuatro CDS:
+``Nyctalus_aviator``, ``Pipistrellus_nathusii``,
+``Pipistrellus_pygmaeus``, ``Vespertilio_murinus``.
+
+Las siete que FALLARON el QC anterior eran:
+
+.. list-table:: Fallos del QC HISTÓRICO de NCL
+   :header-rows: 1
+
+   * - Especie
+     - nt quimera antes
+     - stops internos antes
+     - estado
+   * - Corynorhinus_mexicanus
+     - 2855
+     - 50
+     - fallo
+   * - Corynorhinus_townsendii
+     - 2855
+     - 49
+     - fallo
+   * - Eptesicus_fuscus
+     - 2852
+     - 51
+     - fallo
+   * - Eptesicus_nilssonii
+     - 2855
+     - 52
+     - fallo
+   * - Lasiurus_ega
+     - 2852
+     - 55
+     - fallo
+   * - Myotis_volans
+     - 2885
+     - 60
+     - fallo
+   * - Plecotus_auritus
+     - 2855
+     - 50
+     - fallo
+
+El indicador histórico ``FRAMESHIFT`` fue asignado por longitud
+``%3 != 0`` de la reconstrucción; no constituye por sí solo prueba de
+mutación frameshift en el genoma, ni los stops de una reconstrucción
+incorrecta prueban pseudogenización.
+
+6.3. Hallazgo fundamental: RNA-seq de Plecotus auritus
+-----------------------------------------------------
+
+En ``/Volumes/Expansion/IGV/Plecotus_auritus/`` existen los BAM,
+BAI y GTF de cinco experimentos: ``ERR13757870`` a ``ERR13757874``.
+Se comprobó el locus ``OY734026`` en hebra ``-``:
+
+* intervalo NCL histórico: 32902868–32914225;
+* exón 3 reconstruido: 32910222–32910549 (328 nt);
+* exón 4 reconstruido previamente: 32909700–32909836 (137 nt);
+* exón 5: 32909073–32909159 (87 nt);
+* coincidencia CHARLIE8 histórica: 32899963–32901868.
+
+Se contaron uniones de RNA-seq mediante la operación ``N`` de CIGAR,
+con coordenadas (última base del bloque alineado a la izquierda,
+primera base del bloque alineado a la derecha):
+
+.. list-table:: Soporte de uniones en Plecotus auritus
+   :header-rows: 1
+
+   * - BAM
+     - exón 4–5 (32909159,32909666)
+     - NCL exón 9–CHARLIE8 (32901868,32902868)
+   * - ERR13757870
+     - 14
+     - 5
+   * - ERR13757871
+     - 7
+     - 1
+   * - ERR13757872
+     - 31
+     - 14
+   * - ERR13757873
+     - 27
+     - 5
+   * - ERR13757874
+     - 11
+     - 4
+   * - TOTAL
+     - 90
+     - 29
+
+La unión previamente supuesta ``(32909159,32909700)`` produjo 0
+alineamientos en las cinco muestras. En contraste, el inicio del
+bloque alineado del exón 4 en coordenadas ascendentes es 32909666,
+y la otra unión observada es ``(32909836,32910222)``. Esto respalda
+para ese modelo un exón 4 de ``32909666–32909836`` (171 nt),
+34 nt más largo que el reconstruido inicialmente. Hay soporte de
+las uniones individuales, no secuenciación de una única molécula
+completa de extremo a extremo. Estos conteos son alineamientos,
+no necesariamente moléculas independientes. Cuatro BAM emitieron
+advertencia de índice BAI anterior al BAM (fecha de modificación):
+verificar índices si se necesita auditoría adicional.
+
+Secuencia de 34 nt incorporada SOLO para la reconstrucción provisional::
+
+    GTGGAGGTAGAGGTGGAGGTGGAGGAAGAGGAAG
+
+QC antes: 2855 nt, módulo 3 = 2, 50 stops, sin stop terminal.
+QC provisional después: 2889 nt, módulo 3 = 0, 0 stops internos,
+ATG inicial y TAA terminal (stop en codón 963).
+
+La evidencia de RNA apoya la arquitectura de transcrito NCL–CHARLIE8
+y el límite corregido; NO demuestra proteína funcional ni que todas
+las uniones se encuentren en una única isoforma completa.
+
+6.4. Corrección por homología de otras cinco especies
+---------------------------------------------------
+
+En el exón 4 de cinco especies, el script histórico había escogido
+motivos GT anteriores dentro de una región repetitiva. Se halló un
+donador alternativo con contexto homólogo al de Plecotus::
+
+    AGGAAG|GTAATTGA
+
+NO hay RNA-seq confirmado para estas cinco especies. Son extensiones
+genómicas provisionales basadas en homología y continuidad de ORF,
+no validaciones transcriptómicas directas.
+
+.. list-table:: Extensiones exón 4 verificadas EN MEMORIA
+   :header-rows: 1
+
+   * - Especie
+     - Anterior
+     - Extensión
+     - Nueva longitud
+     - CDS nueva nt
+     - stops internos nueva
+   * - Corynorhinus_mexicanus
+     - 137
+     - +34
+     - 171
+     - 2889
+     - 0
+   * - Corynorhinus_townsendii
+     - 137
+     - +34
+     - 171
+     - 2889
+     - 0
+   * - Eptesicus_fuscus
+     - 134
+     - +37
+     - 171
+     - 2889
+     - 0
+   * - Eptesicus_nilssonii
+     - 137
+     - +40
+     - 177
+     - 2895
+     - 0
+   * - Lasiurus_ega
+     - 137
+     - +40
+     - 177
+     - 2892
+     - 0
+
+Las cinco CDS provisionales tienen ``ATG`` inicial, ``TAA`` terminal,
+longitud múltiplo de 3 y ninguna parada interna. Secuencias añadidas::
+
+    Corynorhinus_mexicanus:   GTGGAGGTGGAGGTGGAGGTGGAGGAAGAGGAAG
+    Corynorhinus_townsendii: GTGGAGGTGGAGGTGGAGGTGGAGGAAGAGGAAG
+    Eptesicus_fuscus:        GTGGTGGAGGTGGAGGTGGAGGTGGAGGAAGAGGAAG
+    Eptesicus_nilssonii:    GTGGAGGTGGAGGTGGAGGTGGAGGTGGAGGAAGAGGAAG
+    Lasiurus_ega:           GTGGAGGTAGAAGTGGAGGTGGAGGTGGAGGAAGAGGAAG
+
+IMPORTANTE: en ``Myotis_volans`` el exón 4 reconstruido (135 nt)
+ya llega a ``ATGAAG|GTAATTGA``. Su problema era DISTINTO.
+
+6.5. Corrección del inicio CDS de Myotis volans
+----------------------------------------------
+
+El exón 2 recuperado tenía 98 nt frente a 114 en la referencia
+``Myotis_myotis``. Su homólogo ``ATGGCT`` comienza en la posición 15,
+no en la posición 31. El script anterior recortaba FIJAMENTE los
+primeros 30 nt de cada exón 2, dejando solamente 68 nt de la región
+codificante, en lugar de los 84 nt homólogos desde ATG.
+
+Al recortar 14 nt, en lugar de 30 nt, se recuperan 16 nt:
+
+* reconstrucción anterior: 2885 nt, primer codón AGG,
+  60 stops internos, codón terminal observado GTT;
+* corregida: 2901 nt, primer codón ATG, cero stops internos,
+  TAA terminal, stop en codón 967.
+
+Esta corrección se basa en posición homóloga del ATG; no implica
+evidencia transcriptómica directa de la isoforma de ``M. volans``.
+
+6.6. ARCHIVOS NUEVOS YA ESCRITOS EN EL MAC — NO SOBREESCRIBIR
+------------------------------------------------------------
+
+La siguiente creación de archivos fue confirmada mediante salida
+terminal del usuario (Mac; NO disponibles necesariamente en el entorno
+de ChatGPT):
+
+Directorio::
+
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/
+
+Archivos::
+
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_22_chimera_cds_provisional.fa
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/sequences/NCL/NCL_22_reconstruction_QC.tsv
+
+La escritura terminó con::
+
+    CDS saved: 22
+    Original historical files were not modified.
+
+Se conservaron 15 secuencias históricas ``PASS`` sin modificaciones;
+se añadieron las siete correcciones indicadas anteriormente. Se excluyó
+``Pipistrellus_kuhlii``. Los registros FASTA mantienen IDs como::
+
+    NCL|Plecotus_auritus|OY734026|strand=-|CHIMERA
+
+Se verificó posteriormente que en **las 22 secuencias**:
+
+* el segmento TE terminal permanece idéntico a
+  ``ANALYSES/dNdS_FINAL/sequences/NCL/te_cds.fa``;
+* ``HOST_nt % 3 == 1``;
+* el codón que atraviesa la unión HOST–TE es ``GGA``;
+* las reconstrucciones contienen ATG inicial, 0 stops internos,
+  TAA terminal y longitud divisible por 3.
+
+Las regiones HOST tienen tamaños diversos (ej.: Myotis_myotis 1213 nt,
+Plecotus_auritus 1216 nt, Myotis_volans 1228 nt); TE = 1673 nt
+para estas 22 reconstrucciones. Mantener la fase es un control de
+consistencia, NO prueba independiente de verdadera unión ni ortología.
+
+PRIORIDAD: NO volver a ejecutar ``17_reconstruct_NCL_chimeras.py``
+sobre rutas históricas, porque sobrescribiría las secuencias/QC originales.
+NO sobrescribir los dos archivos provisionales nuevos; crear versiones
+separadas si se hacen otras correcciones.
+
+6.7. Cuatro CDS pendientes y evidencia de sus loci
+--------------------------------------------------
+
+``ANALYSES/NCL/results/NCL_9exons_Charlie8_positive.tsv`` devuelve:
+
+.. list-table:: Cuatro candidatos sin CDS construida
+   :header-rows: 1
+
+   * - Especie
+     - Scaffold BLAST
+     - Hebra
+     - Distancia exón9–TE
+     - Identidad TE
+     - Cobertura TE
+   * - Nyctalus_aviator
+     - CM072928
+     - -
+     - 994 bp
+     - 95.929 %
+     - 99 %
+   * - Pipistrellus_nathusii
+     - hap2_chr_8
+     - -
+     - 922 bp
+     - 96.138 %
+     - 99 %
+   * - Pipistrellus_pygmaeus
+     - OX465310
+     - -
+     - 999 bp
+     - 95.720 %
+     - 99 %
+   * - Vespertilio_murinus
+     - OZ004711
+     - -
+     - 999 bp
+     - 95.151 %
+     - 100 %
+
+BLAST y genomas comprobados en el Mac:
+
+* Nyctalus_aviator:
+  ``SPECIES/Nyctalus_aviator/mNycAvi1.1.pri.fa``;
+  TE HSP ``CM072928:27729146–27731050``.
+* Pipistrellus_nathusii:
+  únicamente se encontró ``SPECIES/Pipistrellus_nathusii/mPipNat1.1.hap1.fa``.
+  El resultado BLAST se refiere a ``hap2_chr_8``; TE HSP en
+  ``hap2_chr_8:27717136–27719040``. **EL USUARIO CONFIRMÓ QUE NO TIENE
+  EL GENOMA HAP2** y una búsqueda de ``*PipNat*hap2*.fa`` bajo
+  ``/Volumes/Expansion/project3`` no encontró nada. NO aplicar las
+  coordenadas hap2 al FASTA hap1. Para incluir esta especie habría
+  que obtener el ensamblaje hap2 exacto o rehacer la identificación
+  de loci/exones/TE independientemente sobre hap1, con coordenadas
+  nuevas y sin asumir equivalencia.
+* Pipistrellus_pygmaeus:
+  ``SPECIES/Pipistrellus_pygmaeus/mPipPyg1.1.pri.fa``;
+  TE HSP ``OX465310:27958546–27960450``.
+* Vespertilio_murinus:
+  ``SPECIES/Vespertilio_murinus/mVesMur1.1.pri.fa``;
+  TE HSP ``OZ004711:64521191–64523093``. Existe evidencia previa
+  de 27 alineamientos RNA-seq para la unión NCL–CHARLIE8 en cinco
+  BAM (4,8,2,6,7) y auditoría que corrigió un falso negativo de TOGA.
+
+Las cuatro especies tienen 9 hits NCL en orden y TE próximo en 3′.
+ESTO NO GARANTIZA nueve exones completos, CDS intacta o identidad
+inequívoca de parálogo. En ``P. pygmaeus`` la primera auditoría
+``NCL_all_loci_exon_CHARLIE8.tsv`` clasificó un locus de nueve
+exones en OX465310 como sin CHARLIE8, pero la auditoría posterior
+recuperó el TE 3′; no confundir clasificaciones de los dos métodos.
+
+6.8. Estado científico y lista de pendientes
+--------------------------------------------
+
+HECHOS CONSTATADOS
+
+* 26 especies NCL propuestas; 22 secuencias quiméricas provisionales
+  guardadas y comprobadas sin stops internos; cuatro pendientes.
+* Para Plecotus auritus hay datos de RNA-seq de la unión exón 4–5
+  y la unión NCL–CHARLIE8; la corrección de 34 nt es informada por RNA.
+* Para cinco especies adicionales las extensiones del exón 4 son
+  inferencias de homología. Para Myotis volans el ATG homólogo
+  corrige el recorte artificial de exón 2.
+* El genoma hap2 de Pipistrellus nathusii NO está disponible
+  según el usuario. Solo hay hap1 visible en SPECIES.
+
+LO QUE **NO SE SABE TODAVÍA**
+
+* Si todas las 22 reconstrucciones representan isoformas reales y
+  parálogos ortólogos adecuados para pruebas codónicas.
+* Si se obtendrán ORF completas para las cuatro especies pendientes.
+* Si todas las uniones exónicas inferidas están respaldadas por RNA.
+* Si el TE está completo para todas las especies en términos de CDS,
+  pese a los resultados de BLAST; ni funcionalidad proteica.
+
+PENDIENTES, EN ESTE ORDEN RECOMENDADO
+
+#. Confirmar en disco los dos archivos provisionales y conservarlos.
+#. Reconstruir Nyctalus aviator, Pipistrellus pygmaeus y
+   Vespertilio murinus desde las coordenadas de sus FASTA, con la
+   debida selección del locus y auditoría de exones/TE; comenzar por
+   Vespertilio murinus debido a evidencia RNA previa.
+#. Resolver Pipistrellus nathusii: localizar/obtener hap2 o rehacer
+   el análisis de secuencias con hap1; no transferir coordenadas.
+#. Crear resultados HOST, TE y CHIMERA para todas las CDS aceptadas,
+   respetar codón de unión fase 1 (GGA), alinear por codones,
+   comprobar ortología y filtros de QC independientes.
+#. Comparar los árboles específicos con el maestro de 111 terminales
+   debidamente podado; evaluar topología y longitudes de rama.
+#. Auditar las otras cinco arquitecturas propuestas (incluida
+   KATNAL1); sus números de especies son CANDIDATOS.
+#. Solo entonces ejecutar nuevas pruebas HyPhy, conservando intactos
+   los 15 NEXUS/resultados históricos y registrando versión/opciones.
+
+NO ESTÁ EJECUTADO HyPhy 3 sobre las 22 CDS nuevas.
+
+6.9. Punto exacto para reanudar mañana
+-------------------------------------
+
+El usuario acabó diciendo que **NO posee el genoma hap2 de
+Pipistrellus nathusii**. No repetir esa búsqueda y no tratar de
+extraer ``hap2_chr_8`` de ``mPipNat1.1.hap1.fa``.
+
+Preferencia de trabajo: proporcionar UN SOLO COMANDO cada vez, en
+macOS y de solo lectura cuando se esté inspeccionando; solicitar
+salida terminal y continuar. Para acciones que creen archivos,
+explicar previamente exactamente qué se escribirá y jamás
+sobrescribir históricos. Distinguir hechos, inferencias y dudas.
+
+**Siguiente análisis recomendado: Vespertilio murinus.**
+Antes de generar una CDS, inspeccionar con un solo comando las filas
+BLAST correspondientes a los exones 2–9 en
+``ANALYSES/NCL/intermediate/NCL_103_blast/Vespertilio_murinus.tsv``
+y la anotación previa del locus, y escoger cada exón por mismo scaffold,
+hebra, orden, proximidad, cobertura y, si procede, RNA.
+
+COMANDO INICIAL OPCIONAL (SOLO LECTURA), DESDE RAÍZ::
+
+    awk -F '\t' '$1 ~ /^NCL_exon[2-9]_match$/ && $2=="OZ004711" \
+      {print $1,$2,$3,$4,$5,$6,$7,$8,$9,$12}' \
+      ANALYSES/NCL/intermediate/NCL_103_blast/Vespertilio_murinus.tsv \
+      | head -90
+
+**No ejecutar ningún script histórico de reconstrucción con salidas
+existentes sin redireccionarlo a un directorio nuevo.**
