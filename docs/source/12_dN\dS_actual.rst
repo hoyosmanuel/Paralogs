@@ -1421,3 +1421,181 @@ REGLAS PRACTICAS:
 * Mantener ``Pipistrellus_nathusii`` fuera de la matriz de 25
   hasta disponer de un locus y una CDS validos en el ensamblaje
   correcto. No convertir hits hap2 usando coordenadas hap1.
+
+
+8. ACTUALIZACION DEL 23 DE NOVIEMBRE DE 2026: TMPO LISTO COMO INPUT CODONICO
+=============================================================================
+
+Esta seccion es posterior a las secciones 6 y 7 y actualiza especificamente
+el estado de TMPO. No reemplaza los resultados historicos ni implica que
+HyPhy 3 haya sido ejecutado. El investigador confirmo la escritura y
+verificacion de los tres FASTA nuevos desde el terminal de su Mac.
+
+8.1. Alcance y estado final de las secuencias TMPO
+-------------------------------------------------
+
+* Conjunto final auditado: **15 especies de Myotis** (incluye
+  ``Myotis_pilosus``, que no figuraba en la lista candidata de 14 de 6.1).
+* Tres alineamientos codonicos independientes: HOST (138 codones,
+  414 nt), TE (605 codones, 1815 nt), CHIMERA (744 codones, 2232 nt).
+* Los registros fueron reconstruidos previamente desde los genomas y
+  auditados. En verificaciones independientes de solo lectura, los
+  segmentos HOST y TE sin alinear coincidieron exactamente con sus
+  respectivas secuencias genomicas extraidas: 15/15 en cada segmento.
+  Esto valida procedencia de secuencia, NO por si solo expresion,
+  union transcriptomica, ortologia inequívoca o funcion proteica.
+* ``TMPO_QC.tsv``: 15/15 PASS, codones de inicio ATG, fin terminal,
+  cero stops internos y sin ambiguedades, segun auditoria previa.
+* Separacion del alineamiento CHIMERA verificada especie por especie:
+  HOST = codones 1-138 (414 nt), codon de union 139 = ``GCA``
+  (1 nt HOST + 2 nt TE), TE = codones 140-744 (1815 nt).
+  ``GCA`` es exclusivo de CHIMERA: no atribuirlo totalmente a HOST
+  ni a TE en las pruebas separadas. No confundir con NCL, cuyo
+  codon de union es ``GGA``.
+* Gaps codonicos completos y ausencia de stops internos/invalidos
+  comprobados en los alineamientos. Los 11 sitios con gaps de HOST
+  tambien estan en CHIMERA; TE carece de gaps.
+
+8.2. Alineamientos fuente y trazabilidad
+---------------------------------------
+
+Los archivos originales EXISTENTES y NO MODIFICAR son::
+
+    ANALYSES/dNdS_FINAL/alignments/TMPO/TMPO.CHIMERA.codon.aln.fa
+    ANALYSES/dNdS_FINAL/alignments/TMPO/TMPO.HOST.codon.aln.fa
+    ANALYSES/dNdS_FINAL/alignments/TMPO/TMPO.TE.codon.aln.fa
+
+Los NEXUS historicos (NO SOBRESCRIBIR) son::
+
+    ANALYSES/dNdS_FINAL/BUSTED_MH_inputs/TMPO/TMPO.CHIMERA.BUSTED_MH.nex
+    ANALYSES/dNdS_FINAL/BUSTED_MH_inputs/TMPO/TMPO.HOST.BUSTED_MH.nex
+    ANALYSES/dNdS_FINAL/BUSTED_MH_inputs/TMPO/TMPO.TE.BUSTED_MH.nex
+
+Se comprobaron 45 comparaciones exactas de secuencias (15 taxones por
+3 componentes) entre los FASTA originales y las matrices NEXUS,
+utilizando un diccionario explicito especie-codigo ``HLmyo...``.
+Resultado: **45/45 True; 0 mismatches**. Por tanto, no es necesario
+reconstruir los alineamientos desde las entradas historicas.
+
+8.3. Archivos DEFINITIVOS DE ENTRADA guardados en el Mac
+------------------------------------------------------
+
+Directorio confirmado por ``pwd``/``ls``::
+
+    /Volumes/Expansion/project3/bat_HTF_genomic_analysis/ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/inputs/TMPO/
+
+Archivos presentes y sus tamaños informados por ``ls -l``::
+
+    TMPO_15_CHIMERA_codons_verified.fa   35079 bytes
+    TMPO_15_HOST_codons_verified.fa       7479 bytes
+    TMPO_15_TE_codons_verified.fa        28959 bytes
+
+Los tres archivos se crearon como **copias binarias exactas** de los
+FASTA fuente de 8.2, mediante apertura exclusiva ``xb`` (sin
+sobrescritura). El programa verifico SHA-256 de cada fuente y copia e
+imprimio ``VERIFIED`` para los tres, seguido de ``TMPO INPUTS READY``.
+Los NEXUS y FASTA fuente permanecieron sin modificaciones. No atribuir
+los hashes SHA-256 de los arboles a estos FASTA: no fueron impresos.
+
+``inputs/NCL/`` aparece como carpeta hermana en el Mac. La presencia
+de esa carpeta NO demuestra por si sola que los inputs nuevos de NCL
+se encuentren terminados ni verifica su contenido.
+
+8.4. Auditoria de gaps y ambiguedad de alineamiento HOST
+------------------------------------------------------
+
+En el HOST de 138 columnas codonicas se examinaron tres regiones:
+
+* Columna 54: gap en 14/15; solo ``Myotis_pilosus`` conserva un
+  codon adicional (alanina). Insercion compatible con +3 nt.
+* Columnas 81-88: repeticion de motivos ``PVLA``/``APVL``;
+  ``Myotis_volans`` tiene gaps en 81-85 (cinco codones) y
+  ``Myotis_mystacinus`` en 85-88 (cuatro codones). No se sabe si
+  la ubicacion exacta de los gaps elegida por MAFFT refleja
+  inequívocamente la homologia posicional.
+* Columnas 114-115: gaps de dos codones solo en
+  ``Myotis_nigricans``, con flancos conservados.
+
+Codones observados, posiciones 81-88 (excluyendo ``---``)::
+
+    81 CCG:14     82 GTC:14     83 CTC:14     84 GCC:14
+    85 GCC:13     86 CCC:2,CCG:3,CCT:9
+    87 GTC:14     88 CTC:14
+
+La columna 86 tiene sustituciones sinonimas de prolina; la presencia
+de codones conservados en otras columnas NO garantiza que el registro
+de homologia posicional dentro de una repeticion sea unico. **No se
+eliminaron columnas ni especies.** Para HyPhy se propone un analisis
+principal con alineamiento completo y una sensibilidad separada con
+exclusion justificada de columnas 81-88; la mascara NO esta creada.
+La homologia de la region debe ser interpretada con cautela.
+
+8.5. Arboles filogeneticos de TMPO: comprobaciones concluidas
+------------------------------------------------------------
+
+Arbol historico de 15 taxones::
+
+    ANALYSES/dNdS_FINAL/BUSTED_MH_inputs/TMPO/TMPO.species_tree.nwk
+
+Arbol de Cactus re-enraizado (formato NEXUS, no Newick)::
+
+    ANALYSES/dNdS_FINAL/HyPhy3_reanalysis/arbol/Myotis_cactus_neutral_ML_RE-ROOTED.tre
+
+El NEXUS se leyo correctamente con ``Phylo.read(path, 'nexus')``:
+1 arbol, 111 nombres unicos, 15 terminales ``HLmyo...`` de TMPO y
+0 ramas sin longitud. Se podo SOLO una copia en memoria a esos 15
+terminales, sin escribir un archivo nuevo.
+
+Comparacion de topologias NO enraizadas con el arbol historico:
+12 biparticiones historicas; 12 de Cactus; 12 compartidas;
+distancia Robinson-Foulds = **0**.
+
+Comparacion resumida de longitudes de ramas: ambos arboles podados
+presentan 28 ramas, suma = 0.16059, minimo = 0.00109,
+mediana = 0.004895, maximo = 0.01282, sin valores cero o negativos.
+Cuatro distancias patristicas desde ``HLmyoMyo6`` a
+``HLmyoDau2``, ``HLmyoCal2``, ``HLmyoVol2``, ``HLmyoPil1``
+coincidieron exactamente. Estas pruebas NO verifican cada longitud
+de rama individual ni el correcto enraizamiento biologico.
+
+No hay necesidad demostrada de reconstruir otro arbol antes de
+preparar las entradas. HyPhy puede estimar longitudes de rama bajo
+el modelo del alineamiento, segun el analisis escogido.
+
+8.6. Pendientes reales antes de ejecutar HyPhy 3
+-----------------------------------------------
+
+#. Hacer compatibles los identificadores FASTA ``TMPO|Myotis_...``
+   con los identificadores del arbol ``HLmyo...``. Preferir crear
+   **nuevos archivos derivados**, sin modificar los FASTA verificados.
+   El mapeo 15/15 fue comprobado al comparar FASTA y NEXUS, y los
+   NEXUS historicos ya contienen nombres ``HLmyo...`` coincidentes.
+#. Preparar un archivo de arbol de 15 taxones para estas entradas,
+   preservando la topologia y documentando longitudes/raiz.
+   Es posible aprovechar el arbol TMPO historico ya compatible.
+#. Definir y registrar la mascara de sensibilidad HOST columnas
+   81-88; generar solo un derivado nuevo, nunca editar el original.
+#. Registrar version real de HyPhy ejecutada, modelo, opciones,
+   arbol, alineamiento, outputs y correccion por comparaciones
+   multiples; ejecutar en directorio de resultados NUEVO.
+#. Evaluar los resultados sin convertir p nominal en FDR significativo.
+
+ESTADO AL 23-NOV-2026: **TMPO LISTO COMO SECUENCIAS CODONICAS EN
+``inputs/TMPO``; NO completamente listo como configuracion ejecutable
+HyPhy 3; NO hay nuevos resultados HyPhy 3 de TMPO.**
+
+8.7. Reglas de continuidad
+-------------------------
+
+* Trabajar SOLO en TMPO hasta cerrar esta etapa, salvo instruccion
+  expresa del investigador.
+* Un comando completo por turno para ejecutar en Terminal macOS.
+* Solo lectura durante inspecciones; explicar cualquier escritura.
+* No ejecutar scripts historicos que abran archivos existentes con
+  ``w``; no sobrescribir NCL, originales TMPO, resultados JSON/LOG.
+* No repetir auditorias ya concluidas salvo que aparezca evidencia
+  de contradiccion o que cambien los inputs.
+* Distinguir siempre HECHOS, INFERENCIAS y LO QUE NO SE SABE.
+* Proximo paso operativo: preparar en una copia nueva la correspondencia
+  nombres FASTA-arbol (idealmente reutilizando el mapeo 15/15 ya
+  verificado), para dejar entradas ejecutables para HyPhy 3.
